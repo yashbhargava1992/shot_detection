@@ -40,7 +40,7 @@ def data_extractor(fits_file_object):
 
 
 
-def peak_detector(time,rate,rerr,f=1,T=10):
+def peak_detector(time,rate,rerr,f=1,T=10,shot_sep=1,small_peak_flag=False):
 	"""
 	
 	Takes the light curve (with err on the rate) and returns the position of the peaks with which are certain fraction above the mean. 
@@ -54,20 +54,26 @@ def peak_detector(time,rate,rerr,f=1,T=10):
 	rerr						:Error on the rate
 	f							:The factor by which the peak should be greater than the mean level, typically greater than 1
 	T							:The duration of the time for which the mean has to be computed. same unit as time
-	
+	shot_sep					:Minimum separation between 2 consecutive 'shots'
 	
 	OUTPUT:
-	ind_time					: The index position of the peaks. 
+	peak_index_pos				: The index position of the peaks. 
+	lower_peaks					: Other peaks which are within 1 sig pf the detected peak, returned if small_peak_flag is True
+	
+	
+	
 	"""
 	
 	total_duration = time[-1]-time[0]
 	number_of_segments = int(total_duration/T)
 	jump = len(time)/number_of_segments
 	peak_index_pos = np.array([],dtype=int)
+	lower_peaks = np.array([],dtype=int)
+	
 	for i in range(0,len(time),jump):
 		
-		if i+jump<=len(time):ind = np.arange (i,i+jump,1)
-		else : ind=np.arange (i,len(time),1)
+		if i+jump<=len(time):ind = np.arange (i,i+jump,1)				# taking care of the trailing part of the array 
+		else : ind=np.arange (i,len(time),1)							# which doesn't have the same number of points as the jump	
 		seg_time = time[ind]
 		seg_rate = rate[ind]
 		seg_rerr = rerr[ind]
@@ -75,11 +81,18 @@ def peak_detector(time,rate,rerr,f=1,T=10):
 		peak_pos = int(np.argmax(seg_rate))
 		peak_val = seg_rate[peak_pos]					# This value is the maximum count in the segment
 		peak_time = seg_time[peak_pos]					# This value is the position of the peak in the segment. 
+		other_peaks = np.where(seg_rate>peak_val-sig)[0]
+		lower_peaks = np.append(lower_peaks,ind[other_peaks])
 		if peak_val>np.mean(seg_rate)*f:
-			peak_index_pos = np.append(peak_index_pos,int(ind[peak_pos]))
+			if peak_index_pos.size ==0:									# To ensure the consecutive shots are far enough. This condition can be applied at the end too
+				peak_index_pos = np.append(peak_index_pos,int(ind[peak_pos]))
+			elif len(peak_index_pos) !=0 and peak_time>time[peak_index_pos][-1]+shot_sep*T:
+				peak_index_pos = np.append(peak_index_pos,int(ind[peak_pos]))
+		#~ print peak_index_pos.size	
 		#~ else:
 			#~ peak_index_pos = np.append(peak_index_pos,np.nan)
 	peak_index_pos = peak_index_pos.astype(int)
-	return peak_index_pos
+	if small_peak_flag: return peak_index_pos,lower_peaks
+	else: return peak_index_pos
 	
 	 
