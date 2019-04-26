@@ -12,7 +12,32 @@ def rebinner(x,y,rebin_factor,rate_flag):
 	"""
 	return None
 
-
+def error_propagator_for_ratio(num,num_err,den,den_err,ratio_flag=False):
+	"""
+	
+	Computes the error for the ratio of 2 time series (currently). Also returns the ratio itself if ratio flag is set true
+	
+	INPUT:
+	
+	num							: Numerator for the ratio
+	num_err						: Error on numerator
+	den							: Denominator for the ratio
+	den_err						: Error on denominator
+	ratio_flag					: If true, returns the ratio and the error on the ratio
+	
+	OUTPUT:
+	
+	rat_err						: Error on the ratio
+	ratio						: Returned if ratio flag is true
+	
+	
+	"""
+	
+	ratio = num/den
+	rat_err = ratio * (num_err/num+den_err/den)
+	if ratio_flag: return rat_err,ratio
+	else: rat_err
+	
 
 def data_extractor(fits_file_object):
 	
