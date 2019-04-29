@@ -46,9 +46,9 @@ unit3_time_band3, unit3_rate_band3, unit3_r_er_band3 = mf.data_extractor(unit3_d
 #~ back_unit1_time_band3, back_unit1_rate_band3, back_unit1_r_er_band3 = mf.data_extractor(back_unit1_data_band3)
 
 
+#~ print unit1_time_band1[-1]-unit1_time_band1[0]
 
-
-jump = len(unit1_time_band1)/1000
+jump = len(unit1_time_band1)/246
 for i in range(0,len(unit1_time_band1),jump):
 	
 	if i+jump<=len(unit1_time_band1):short_seg = np.arange(i,i+jump,1)
