@@ -3,7 +3,7 @@ import numpy as np
 def rebinner(x,y,rebin_factor,rate_flag):
 	"""
 	The function returns a rebinned array based on the rebin factor provided.
-	Currently the rebin factor should be a natural number. 
+	Currently The function is not written. #the rebin factor should be a natural number. 
 	Support for log binning (via a negative number will be provided soon)
 	
 	
@@ -11,6 +11,36 @@ def rebinner(x,y,rebin_factor,rate_flag):
 	
 	"""
 	return None
+
+def gap_detector (time,f=3, dt=None):
+	"""
+	
+	Detects gap in the time series. Returns the index of the array supplied when the next time stamp 
+	is atleast 'f' times 'dt' more than the current time stamp. If None, dt is computed in the function itself
+	
+	INPUT:
+	
+	time						: Array in which gaps are to searched for
+	f							: The factor by which the consecutive time stamps should be separated to be considered a gap
+	dt							: Minimum time bin of the array
+	
+	
+	OUTPUT:
+	
+	index						: Start index of the gap
+	
+	
+	"""
+	diff = time[1:]-time[:-1]
+	
+	if dt == None: dt = np.median (diff)
+	index_gap_start = np.where(diff>f*dt)[0]
+	
+	return index_gap_start
+	
+	
+
+
 
 def error_propagator_for_ratio(num,num_err,den,den_err,ratio_flag=False):
 	"""
