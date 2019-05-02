@@ -65,7 +65,7 @@ def error_propagator_for_ratio(num,num_err,den,den_err,ratio_flag=False):
 	
 	ratio = num/den
 	rat_err = ratio * (num_err/num+den_err/den)
-	if ratio_flag: return rat_err,rat
+	if ratio_flag: return rat_err,ratio
 	else: rat_err
 	
 
