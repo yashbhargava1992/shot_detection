@@ -69,7 +69,7 @@ for i,seg_end in enumerate(gap_start):
 	ax1.errorbar(unit1_time_band1[short_seg], unit1_rate_band1[short_seg], yerr=unit1_r_er_band1[short_seg],alpha=0.5,color='lightgrey')
 	#~ plt.plot(unit1_time_band1[short_seg], unit1_rate_band1[short_seg])
 	#~ peak_pos = mf.peak_detector(unit1_time_band1[short_seg], unit1_rate_band1[short_seg], unit1_r_er_band1[short_seg],f=1,T=2,shot_sep=-1,small_peak_flag=False)
-	peak_pos,other_peaks = mf.peak_detector(unit1_time_band1[short_seg], unit1_rate_band1[short_seg], unit1_r_er_band1[short_seg],f=5,T=10,shot_sep=3,small_peak_flag=True)
+	peak_pos,other_peaks = mf.peak_detector(unit1_time_band1[short_seg], unit1_rate_band1[short_seg], unit1_r_er_band1[short_seg],f=10,T=10,shot_sep=3,small_peak_flag=True)
 	#~ ax1.plot(unit1_time_band1[short_seg][other_peaks], unit1_rate_band1[short_seg][other_peaks],'or',label='Other peaks')
 	ax1.plot(unit1_time_band1[short_seg][peak_pos], unit1_rate_band1[short_seg][peak_pos],'og',label='SHOT')
 	#~ ax1.errorbar(back_unit1_time_band1[short_seg], back_unit1_rate_band1[short_seg], yerr=back_unit1_r_er_band1[short_seg])
