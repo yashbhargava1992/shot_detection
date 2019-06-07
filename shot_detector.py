@@ -47,29 +47,39 @@ unit3_time_band3, unit3_rate_band3, unit3_r_er_band3 = mf.data_extractor(unit3_d
 
 
 #~ print unit1_time_band1[-1]-unit1_time_band1[0]
+gap_start = mf.gap_detector(unit1_time_band1,10)
+gap_end = gap_start+1
+print gap_start
 
-jump = len(unit1_time_band1)/246
-for i in range(0,len(unit1_time_band1),jump):
+''
+#~ jump = len(unit1_time_band1)/246
+#~ for i in range(0,len(unit1_time_band1),jump):
+for i,seg_end in enumerate(gap_start):
 	
-	if i+jump<=len(unit1_time_band1):short_seg = np.arange(i,i+jump,1)
-	else: short_seg = np.arange(i,len(unit1_time_band1),1)
+	#~ if i+jump<=len(unit1_time_band1):short_seg = np.arange(i,i+jump,1)
+	#~ else: short_seg = np.arange(i,len(unit1_time_band1),1)
+	if i==0: short_seg = np.arange(0,seg_end,1)
+	elif i==len(gap_start)-1: 
+		short_seg = np.arange(gap_end[i],len(unit1_time_band1),1)
+	else: short_seg = np.arange(gap_end[i-1],seg_end,1)
 	
+	print short_seg
 	# Plotting shots in Band 1
 	ax1 = plt.subplot(311)
-	ax1.errorbar(unit1_time_band1[short_seg], unit1_rate_band1[short_seg], yerr=unit1_r_er_band1[short_seg],alpha=0.5)
+	ax1.errorbar(unit1_time_band1[short_seg], unit1_rate_band1[short_seg], yerr=unit1_r_er_band1[short_seg],alpha=0.5,color='lightgrey')
 	#~ plt.plot(unit1_time_band1[short_seg], unit1_rate_band1[short_seg])
 	#~ peak_pos = mf.peak_detector(unit1_time_band1[short_seg], unit1_rate_band1[short_seg], unit1_r_er_band1[short_seg],f=1,T=2,shot_sep=-1,small_peak_flag=False)
-	peak_pos,other_peaks = mf.peak_detector(unit1_time_band1[short_seg], unit1_rate_band1[short_seg], unit1_r_er_band1[short_seg],f=1,T=1.5,shot_sep=0,small_peak_flag=True)
-	ax1.plot(unit1_time_band1[short_seg][other_peaks], unit1_rate_band1[short_seg][other_peaks],'o',label='Other peaks')
-	ax1.plot(unit1_time_band1[short_seg][peak_pos], unit1_rate_band1[short_seg][peak_pos],'o',label='SHOT')
+	peak_pos,other_peaks = mf.peak_detector(unit1_time_band1[short_seg], unit1_rate_band1[short_seg], unit1_r_er_band1[short_seg],f=5,T=10,shot_sep=3,small_peak_flag=True)
+	#~ ax1.plot(unit1_time_band1[short_seg][other_peaks], unit1_rate_band1[short_seg][other_peaks],'or',label='Other peaks')
+	ax1.plot(unit1_time_band1[short_seg][peak_pos], unit1_rate_band1[short_seg][peak_pos],'og',label='SHOT')
 	#~ ax1.errorbar(back_unit1_time_band1[short_seg], back_unit1_rate_band1[short_seg], yerr=back_unit1_r_er_band1[short_seg])
 	plt.legend()
-	
+	print unit1_time_band1[short_seg][0], unit2_time_band1[short_seg][0]
 	# Plotting the same pos in Band 2
 	ax2 = plt.subplot(312,sharex=ax1)
-	ax2.errorbar(unit1_time_band2[short_seg], unit1_rate_band2[short_seg], yerr=unit1_r_er_band2[short_seg],alpha=0.5)
-	ax2.plot(unit1_time_band2[short_seg][other_peaks], unit1_rate_band2[short_seg][other_peaks],'o',label='Other peaks')
-	ax2.plot(unit1_time_band2[short_seg][peak_pos], unit1_rate_band2[short_seg][peak_pos],'o',label='SHOT')
+	ax2.errorbar(unit2_time_band1[short_seg], unit2_rate_band1[short_seg], yerr=unit2_r_er_band1[short_seg],alpha=0.5,color='lightgrey')
+	#~ ax2.plot(unit2_time_band1[short_seg][other_peaks], unit2_rate_band1[short_seg][other_peaks],'or',label='Other peaks')
+	ax2.plot(unit2_time_band1[short_seg][peak_pos], unit2_rate_band1[short_seg][peak_pos],'og',label='SHOT')
 
 	
 	# PLotting the ratio of the counts in B2 and B1
@@ -85,3 +95,4 @@ for i in range(0,len(unit1_time_band1),jump):
 	plt.show()
 	plt.clf()
 
+''
