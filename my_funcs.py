@@ -138,12 +138,15 @@ def peak_detector(time,rate,rerr,f=1,T=10,shot_sep=1,small_peak_flag=False):
 		peak_time = seg_time[peak_pos]					# This value is the position of the peak in the segment. 
 		other_peaks = np.where(seg_rate>peak_val-sig)[0]
 		lower_peaks = np.append(lower_peaks,ind[other_peaks])
-		if peak_val>np.mean(seg_rate)*f:
+		if peak_val>np.mean(seg_rate)+sig*f:
 			if peak_index_pos.size ==0:									# To ensure the consecutive shots are far enough. This condition can be applied at the end too
 				peak_index_pos = np.append(peak_index_pos,int(ind[peak_pos]))
 			elif len(peak_index_pos) !=0 and peak_time>time[peak_index_pos][-1]+shot_sep*T:
 				peak_index_pos = np.append(peak_index_pos,int(ind[peak_pos]))
-		#~ print peak_index_pos.size	
+			elif len(peak_index_pos) !=0 and peak_time<time[peak_index_pos][-1]+shot_sep*T:
+				if rate[peak_index_pos][-1] < peak_val: 
+					peak_index_pos[-1] = int(ind[peak_pos])
+				#~ print peak_index_pos.size	
 		#~ else:
 			#~ peak_index_pos = np.append(peak_index_pos,np.nan)
 	peak_index_pos = peak_index_pos.astype(int)
