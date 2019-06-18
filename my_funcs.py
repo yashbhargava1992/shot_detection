@@ -95,7 +95,7 @@ def data_extractor(fits_file_object):
 
 
 
-def peak_detector(time,rate,rerr,f=1,T=10,shot_sep=1,small_peak_flag=False):
+def peak_detector(time,rate,rerr,f=1,T=10,shot_sep=1,small_peak_flag=False, sig_det = 'med'):
 	"""
 	
 	Takes the light curve (with err on the rate) and returns the position of the peaks with which are certain fraction above the mean. 
@@ -110,12 +110,14 @@ def peak_detector(time,rate,rerr,f=1,T=10,shot_sep=1,small_peak_flag=False):
 	f							:The factor by which the peak should be greater than the mean level, typically greater than 1
 	T							:The duration of the time for which the mean has to be computed. same unit as time
 	shot_sep					:Minimum separation between 2 consecutive 'shots'
+	small_peak_flag				:True if you want to return the lower peaks. 
+	sig_det						:Determines the method of sig determination Median of present error (med), STD of rate (std) or error propgation (pro)
 	
 	OUTPUT:
 	peak_index_pos				: The index position of the peaks. 
 	lower_peaks					: Other peaks which are within 1 sig pf the detected peak, returned if small_peak_flag is True
 	
-	
+	Note: If small_peak_flag is True then the function returns a tuple of 2 arrays. 
 	
 	"""
 	
@@ -132,7 +134,14 @@ def peak_detector(time,rate,rerr,f=1,T=10,shot_sep=1,small_peak_flag=False):
 		seg_time = time[ind]
 		seg_rate = rate[ind]
 		seg_rerr = rerr[ind]
-		sig = np.median(seg_rerr)
+		if sig_det == 'med': sig = np.median(seg_rerr)
+		elif sig_det == 'std': sig = np.std(seg_rate)
+		elif sig_det == 'pro': 
+			print 'Propogation code is not written defaulting to med'
+			sig = np.median(seg_rerr)
+		else: 
+			print 'Use med, std or pro only. \n I am going with med'
+			sig = np.median(seg_rerr)
 		peak_pos = int(np.argmax(seg_rate))
 		peak_val = seg_rate[peak_pos]					# This value is the maximum count in the segment
 		peak_time = seg_time[peak_pos]					# This value is the position of the peak in the segment. 
