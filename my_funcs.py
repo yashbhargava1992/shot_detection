@@ -152,7 +152,7 @@ def peak_detector(time,rate,rerr,f=1,T=10,shot_sep=1,small_peak_flag=False, sig_
 				peak_index_pos = np.append(peak_index_pos,int(ind[peak_pos]))
 			elif len(peak_index_pos) !=0 and peak_time>time[peak_index_pos][-1]+shot_sep*T:
 				peak_index_pos = np.append(peak_index_pos,int(ind[peak_pos]))
-			elif len(peak_index_pos) !=0 and peak_time<time[peak_index_pos][-1]+shot_sep*T:
+			elif len(peak_index_pos) !=0 and peak_time<time[peak_index_pos][-1]+shot_sep*T:			# To reatin the larger peak in the shot_sep duration
 				if rate[peak_index_pos][-1] < peak_val: 
 					peak_index_pos[-1] = int(ind[peak_pos])
 				#~ print peak_index_pos.size	
