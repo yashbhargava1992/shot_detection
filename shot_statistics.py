@@ -32,8 +32,8 @@ number_peaks = np.zeros(len(f_list))
 
 print f_list
 
-stat_flag = False
-
+#~ stat_flag = False
+stat_flag = True
 if stat_flag:
 	for x,f in enumerate(f_list):
 		for i,seg_end in enumerate(gap_start):
@@ -60,7 +60,7 @@ if stat_flag:
 	plt.plot(f_list,diff_peaks) 			
 	#~ plt.bar(f_list[:-1],diff_peaks[::-1],width=1,align='edge')
 	plt.yscale('log')
-	#~ plt.show()
+	plt.show()
 
 rate_hist = np.histogram (unit1_rate_band1[:gap_start[-3]],100)	
 
