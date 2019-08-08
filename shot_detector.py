@@ -17,7 +17,7 @@ import my_funcs as mf
 data_path = "../lc_data/"
 #~ data_path = "../orbitwise_lxp/"
 
-unit1_data_band1	= fits.open(data_path+"laxpc_lc_0p05_unit1_3.0_5.0keV.lc")
+unit1_data_band1	= fits.open(data_path+"laxpc_lc_0p05_unit1_3.0_80.0keV.lc")
 unit1_data_band2	= fits.open(data_path+"laxpc_lc_0p05_unit1_5.0_10.0keV.lc")
 unit1_data_band3 	= fits.open(data_path+"laxpc_lc_0p05_unit1_10.0_20.0keV.lc")
 unit2_data_band1	= fits.open(data_path+"laxpc_lc_0p05_unit2_3.0_5.0keV.lc")
@@ -49,9 +49,12 @@ unit3_time_band3, unit3_rate_band3, unit3_r_er_band3 = mf.data_extractor(unit3_d
 #~ print unit1_time_band1[-1]-unit1_time_band1[0]
 gap_start = mf.gap_detector(unit1_time_band1,10)
 gap_end = gap_start+1
-print gap_start
+#~ print gap_start
 
-''
+list_of_peak_indices = []
+list_of_peak_times = []
+
+
 #~ jump = len(unit1_time_band1)/246
 #~ for i in range(0,len(unit1_time_band1),jump):
 for i,seg_end in enumerate(gap_start):
@@ -63,19 +66,21 @@ for i,seg_end in enumerate(gap_start):
 		short_seg = np.arange(gap_end[i],len(unit1_time_band1),1)
 	else: short_seg = np.arange(gap_end[i-1],seg_end,1)
 	
-	print short_seg
+	#~ print 'short_seg', short_seg
 	# Plotting shots in Band 1
 	ax1 = plt.subplot(211)
 	ax1.errorbar(unit1_time_band1[short_seg], unit1_rate_band1[short_seg], yerr=unit1_r_er_band1[short_seg],alpha=0.5,color='grey')
 	#~ plt.plot(unit1_time_band1[short_seg], unit1_rate_band1[short_seg])
 	#~ peak_pos = mf.peak_detector(unit1_time_band1[short_seg], unit1_rate_band1[short_seg], unit1_r_er_band1[short_seg],f=1,T=2,shot_sep=-1,small_peak_flag=False)
-	peak_pos,other_peaks = mf.peak_detector(unit1_time_band1[short_seg], unit1_rate_band1[short_seg], unit1_r_er_band1[short_seg],f=10,T=32,shot_sep=0.5,small_peak_flag=True,sig_det='std')
+	peak_pos,other_peaks = mf.peak_detector(unit1_time_band1[short_seg], unit1_rate_band1[short_seg], unit1_r_er_band1[short_seg],f=3,T=32,shot_sep=0.5,small_peak_flag=True,sig_det='std')
 	#~ ax1.plot(unit1_time_band1[short_seg][other_peaks], unit1_rate_band1[short_seg][other_peaks],'or',label='Other peaks')
 	ax1.plot(unit1_time_band1[short_seg][peak_pos], unit1_rate_band1[short_seg][peak_pos],'og',label='SHOT')
 	#~ ax1.errorbar(back_unit1_time_band1[short_seg], back_unit1_rate_band1[short_seg], yerr=back_unit1_r_er_band1[short_seg])
 	ax1.set_ylabel('Count rate Unit1')
 	plt.legend()
-	print unit1_time_band1[short_seg][0], unit2_time_band1[short_seg][0]
+	#~ print unit1_time_band1[short_seg][0], unit2_time_band1[short_seg][0]
+	
+	
 	# Plotting the same pos in Band 2
 	ax2 = plt.subplot(212,sharex=ax1)
 	ax2.errorbar(unit2_time_band1[short_seg], unit2_rate_band1[short_seg], yerr=unit2_r_er_band1[short_seg],alpha=0.5,color='grey')
@@ -92,10 +97,14 @@ for i,seg_end in enumerate(gap_start):
 	#~ ax3.errorbar(unit1_time_band2[short_seg], rat,yerr=rat_err,alpha=0.5)
 	#~ ax3.plot(unit1_time_band2[short_seg][other_peaks], rat[other_peaks],'o',label='Other peaks')
 	#~ ax3.plot(unit1_time_band2[short_seg][peak_pos], rat[peak_pos],'o',label='SHOT')
+	#~ print 'peak_pos',peak_pos
+	#~ print 'short_seg[peak_pos]',short_seg[peak_pos]
 	
+	list_of_peak_indices = np.append(list_of_peak_indices,short_seg[peak_pos])
+	list_of_peak_times = np.append(list_of_peak_times,unit1_time_band1[short_seg][peak_pos])
 	
-	
-	plt.show()
+	#~ plt.show()
 	plt.clf()
-
-''
+#~ print list_of_peak_indices
+np.savetxt('index_list_0p05_unit1_fullrange.txt',list_of_peak_indices,fmt='%1i')		# Saving the list of indices to be used with 0.05 s LC of the observation. 
+np.savetxt('peak_time_list_0p05_unit1.txt',list_of_peak_times)
