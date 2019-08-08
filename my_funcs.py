@@ -161,5 +161,54 @@ def peak_detector(time,rate,rerr,f=1,T=10,shot_sep=1,small_peak_flag=False, sig_
 	peak_index_pos = peak_index_pos.astype(int)
 	if small_peak_flag: return peak_index_pos,lower_peaks
 	else: return peak_index_pos
+
+
+def peak_isolator(peak_index,time,del_time=None, peak_duration=10.0):
+	"""
 	
-	 
+	This function accepts an index value(peak_index) and returns a set of indices around that peak. 
+	The duration around the peak is defaulted to 10s i.e. plus/minus 5s around the peak.
+	
+	INPUT:
+	
+	peak_index					: The position around which the indices will be returned
+	time						: The time array corresponding to the peak_index
+	del_time					: The minimum time bin of the time array (used to convert time to indices)
+	peak_duration				: Duration of the peak Default value 10s
+	
+	
+	OUTPUT:
+	
+	peak_profile_indices		: Array of index which correspond to the peak. 
+	
+	
+	"""	
+	
+	diff = time[1:]-time[:-1]
+	
+	if del_time == None: del_time = np.median (diff)
+	
+	index_gap_start = gap_detector(time,3,del_time)
+	
+	number_of_indices = int(np.ceil(peak_duration/del_time))
+	
+	# Checking if the current peak is too close to a gap.
+	
+	distance_from_gap = index_gap_start-peak_index
+	print distance_from_gap
+	
+	closest_distance = np.argmin(np.abs(distance_from_gap))
+	if (np.abs(distance_from_gap[closest_distance])< number_of_indices/2):
+		if distance_from_gap[closest_distance] > 0:	
+			# Means that the gap starts shortly after the peak
+			peak_profile_indices = np.arange(peak_index - number_of_indices/2,index_gap_start[closest_distance],1)
+		elif distance_from_gap[closest_distance] < 0:
+			# Means that the gap ends shortly before the peak, +1 to gap start is done to get the gap end index
+			peak_profile_indices = np.arange(index_gap_start[closest_distance]+1, peak_index + number_of_indices/2 + 1, 1)
+		else : 
+			print "The peak is at exactly gap start. Something is really wrong!!!!!!"
+		return peak_profile_indices
+	else:
+		peak_profile_indices = np.arange(peak_index - number_of_indices/2, peak_index + number_of_indices/2+1,1)
+	return peak_profile_indices
+ 
