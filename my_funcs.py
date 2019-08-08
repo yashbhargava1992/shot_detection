@@ -195,20 +195,24 @@ def peak_isolator(peak_index,time,del_time=None, peak_duration=10.0):
 	# Checking if the current peak is too close to a gap.
 	
 	distance_from_gap = index_gap_start-peak_index
-	print distance_from_gap
+	#~ print distance_from_gap
 	
 	closest_distance = np.argmin(np.abs(distance_from_gap))
+	
 	if (np.abs(distance_from_gap[closest_distance])< number_of_indices/2):
+		
 		if distance_from_gap[closest_distance] > 0:	
 			# Means that the gap starts shortly after the peak
 			peak_profile_indices = np.arange(peak_index - number_of_indices/2,index_gap_start[closest_distance],1)
+		
 		elif distance_from_gap[closest_distance] < 0:
 			# Means that the gap ends shortly before the peak, +1 to gap start is done to get the gap end index
 			peak_profile_indices = np.arange(index_gap_start[closest_distance]+1, peak_index + number_of_indices/2 + 1, 1)
+		
 		else : 
 			print "The peak is at exactly gap start. Something is really wrong!!!!!!"
-		return peak_profile_indices
+	
 	else:
 		peak_profile_indices = np.arange(peak_index - number_of_indices/2, peak_index + number_of_indices/2+1,1)
+	
 	return peak_profile_indices
- 
