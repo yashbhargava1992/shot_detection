@@ -224,18 +224,22 @@ def peak_isolator(peak_index,time,del_time=None, peak_duration=10.0):
 	
 	closest_distance = np.argmin(np.abs(distance_from_gap))
 	
-	if (np.abs(distance_from_gap[closest_distance])< number_of_indices/2):
+	if (np.abs(distance_from_gap[closest_distance])< number_of_indices/2) or peak_index < number_of_indices/2 or peak_index > len(time)-number_of_indices/2 :
 		
-		if distance_from_gap[closest_distance] > 0:	
-			# Means that the gap starts shortly after the peak
-			peak_profile_indices = np.arange(peak_index - number_of_indices/2,index_gap_start[closest_distance],1)
+		# The gap assumes that the peak is quite in the middle. If the gap is quite to the edge of the data then add the appropriate conditions
 		
-		elif distance_from_gap[closest_distance] < 0:
-			# Means that the gap ends shortly before the peak, +1 to gap start is done to get the gap end index
-			peak_profile_indices = np.arange(index_gap_start[closest_distance]+1, peak_index + number_of_indices/2 + 1, 1)
+		if distance_from_gap[closest_distance] >= 0 or peak_index < number_of_indices/2:	
+			# Means that the gap starts shortly after the peak and checking if the start of the index is not terribly close to the start of the data set
+			peak_profile_indices = np.arange(max(0,peak_index - number_of_indices/2),index_gap_start[closest_distance],1)
 		
-		else : 
-			print "The peak is at exactly gap start. Something is really wrong!!!!!!"
+		elif distance_from_gap[closest_distance] < 0 or peak_index > len(time)-number_of_indices/2:
+			# Means that the gap ends shortly before the peak, +1 to gap start is done to get the gap end index and checking if the end of index is not quite close to end of data
+			#~ print index_gap_start[closest_distance]+1, min(len(time)-1,peak_index + number_of_indices/2)
+			peak_profile_indices = np.arange(index_gap_start[closest_distance]+1, min(len(time),peak_index + number_of_indices/2 + 1), 1)
+		
+		
+		#~ else : 
+			#~ print "The peak is at exactly gap start. Something is really wrong!!!!!!"
 	
 	else:
 		peak_profile_indices = np.arange(peak_index - number_of_indices/2, peak_index + number_of_indices/2+1,1)
@@ -267,12 +271,14 @@ def peak_fitter(time,rate,only_base_index,peak_index,peak_prof_index,guess_vals)
 	
 	Play with the parameters and determine the set of parameters to be used finally
 	"""
-	
+
 	base_value = np.mean(rate[only_base_index])
 	offseted_rate = rate - base_value
 	offseted_time = time - time[peak_index]
-	
-	popt,pcov = op.curve_fit(rise_n_decay, offseted_time[peak_prof_index],offseted_rate[peak_prof_index], p0=guess_vals, bounds = ([1,1e-3,1,-100],[20000,100,20000,-1e-3]))
-	
+	try:
+		popt,pcov = op.curve_fit(rise_n_decay, offseted_time[peak_prof_index],offseted_rate[peak_prof_index], p0=guess_vals, bounds = ([1,1e-3,1,-100],[20000,100,20000,-1e-3]))
+	except RuntimeError:
+		popt = guess_vals
+		pcov = np.reshape(np.zeros(len(popt)*len(popt)),(len(popt),len(popt)))
 	return base_value, popt, pcov
 	
