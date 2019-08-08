@@ -1,4 +1,5 @@
 import numpy as np 
+import scipy.optimize as op
 
 def rebinner(x,y,rebin_factor,rate_flag):
 	"""
@@ -39,8 +40,32 @@ def gap_detector (time,f=3, dt=None):
 	return index_gap_start
 	
 	
+def exponential(x,*pars):
+	# Assumed form y = A*e^(w*x) w can be +ve for rise and -ve for decay, offset to be applied additionally
+	A,w = pars
+	return A*np.exp(x*w)
+	
+def rise_n_decay(x,*pars):
+	"""
+	The function takes in the time as x, peak time is assumed to be 0 and pars as A1,w1,A2,w2
+	
+	f(x) 	= A1*np.exp(w1*(x-x0)) for x<0
+			= A2*np.exp(w2*(x-x0)) for x>0			Assumes w2<0
+			= A at 0. (A should be equal to A1 and A2 ) For now A1
+	
+	"""
+	a = np.zeros(len(x))
+	ind_less = np.where(x<=0)[0]
+	ind_more = np.where(x>0)[0]
+	
+	A1,w1,A2,w2 = pars
+	
+	a[ind_less] = exponential(x[ind_less],A1,w1)
+	a[ind_more] = exponential(x[ind_more],A2,w2)
 
-
+	return a
+	
+	
 
 def error_propagator_for_ratio(num,num_err,den,den_err,ratio_flag=False):
 	"""
@@ -216,3 +241,38 @@ def peak_isolator(peak_index,time,del_time=None, peak_duration=10.0):
 		peak_profile_indices = np.arange(peak_index - number_of_indices/2, peak_index + number_of_indices/2+1,1)
 	
 	return peak_profile_indices
+
+
+def peak_fitter(time,rate,only_base_index,peak_index,peak_prof_index,guess_vals):
+	"""
+	
+	This function will take in the short segment corresponding to the peak profile and fit it with a exponential rise and decay
+	
+	The base line is computed using only_base_index. For best results provide a set of index which are not common with peak_index
+	
+	
+	INPUT:
+	
+	time						: Time array  
+	rate						: Rate array
+	only_base_index				: Indices of the time/rate corresponding to the area around the peak
+	peak_index					: Index of the time/rate corresponding to the peak
+	peak_prof_index				: Indices of the time/rate corresponding to the peak profile, whose parameters are to be estimated
+	
+	
+	OUTPUT:
+	
+	fit_pars					: The fit parameters of the peak Include - offset, rise_time,rise_max, decay_time,decay_max 
+	
+	
+	Play with the parameters and determine the set of parameters to be used finally
+	"""
+	
+	base_value = np.mean(rate[only_base_index])
+	offseted_rate = rate - base_value
+	offseted_time = time - time[peak_index]
+	
+	popt,pcov = op.curve_fit(rise_n_decay, offseted_time[peak_prof_index],offseted_rate[peak_prof_index], p0=guess_vals, bounds = ([1,1e-3,1,-100],[20000,100,20000,-1e-3]))
+	
+	return base_value, popt, pcov
+	
