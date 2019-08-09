@@ -41,8 +41,14 @@ peak_index = np.loadtxt("index_list_0p05_unit1_fullrange.txt",dtype=int)
 #~ plt.plot(unit1_time_band1, unit1_rate_band1)
 #~ plt.plot(peak_time,peak_rate,'.')
 #~ plt.show()
+offset_unit1_list = []
+offset_unit2_list = []
 
-for i,index in enumerate(peak_index):
+peak_pars_unit1 = np.array([])
+peak_pars_unit2 = np.array([])
+
+print "Number of peaks",len(peak_index)
+for i,index in enumerate(peak_index[:]):
 
 	#~ print mf.peak_isolator(index,unit1_time_band1)
 	
@@ -57,13 +63,35 @@ for i,index in enumerate(peak_index):
 	
 	only_base_index = np.setdiff1d(base_profile_index,peak_profile_index)
 	#~ print peak_profile_index, only_base_index
-	
 	guess_vals = [100,0.1,100,-0.1]
 	offset,popt,pcov = mf.peak_fitter(unit1_time_total,unit1_rate_total,only_base_index,index,peak_profile_index,guess_vals)
-	print popt, guess_vals
+	#~ print i,'unit1', popt, guess_vals
+	offset_unit1_list.append(offset)
+	if i==0:
+		peak_pars_unit1 = np.append(peak_pars_unit1,popt)
+	else:	
+		peak_pars_unit1 = np.vstack([peak_pars_unit1,popt])
+	
 	plt.plot(unit1_time_total[base_profile_index], unit1_rate_total[base_profile_index])
 	plt.plot(unit1_time_total[peak_profile_index], offset + mf.rise_n_decay(unit1_time_total[peak_profile_index]-unit1_time_total[index],*popt),'.')
 	plt.plot(unit1_time_total[peak_profile_index], offset + mf.rise_n_decay(unit1_time_total[peak_profile_index]-unit1_time_total[index],*guess_vals),'.')
 	
+	#~ if i==361: plt.show()
+	plt.clf()
+	offset,popt,pcov = mf.peak_fitter(unit2_time_total,unit2_rate_total,only_base_index,index,peak_profile_index,guess_vals)
+	#~ print 'unit2',popt, guess_vals
+	offset_unit2_list.append(offset)
 	
-	plt.show()
+	plt.plot(unit2_time_total[base_profile_index], unit2_rate_total[base_profile_index])
+	plt.plot(unit2_time_total[peak_profile_index], offset + mf.rise_n_decay(unit2_time_total[peak_profile_index]-unit2_time_total[index],*popt),'.')
+	plt.plot(unit2_time_total[peak_profile_index], offset + mf.rise_n_decay(unit2_time_total[peak_profile_index]-unit2_time_total[index],*guess_vals),'.')
+	#~ plt.show()
+	plt.clf()
+	if i==0:
+		peak_pars_unit2 = np.append(peak_pars_unit2,popt)
+	else:	
+		peak_pars_unit2 = np.vstack([peak_pars_unit2,popt])
+
+print np.shape(peak_pars_unit1)
+np.savetxt('unit1_peak_fit_values.txt',peak_pars_unit1)
+np.savetxt('unit2_peak_fit_values.txt',peak_pars_unit2)
