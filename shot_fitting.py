@@ -53,7 +53,7 @@ for i,index in enumerate(peak_index[:]):
 	#~ print mf.peak_isolator(index,unit1_time_band1)
 	
 	base_profile_index = mf.peak_isolator(index,unit1_time_total,peak_duration=10)
-	peak_profile_index = mf.peak_isolator(index,unit1_time_total,peak_duration=1)
+	peak_profile_index = mf.peak_isolator(index,unit1_time_total,peak_duration=2)
 	
 	# Plotting the peaks and the baseline
 	#~ plt.plot(unit1_time_total[base_profile_index], unit1_rate_total[base_profile_index])
@@ -63,7 +63,7 @@ for i,index in enumerate(peak_index[:]):
 	
 	only_base_index = np.setdiff1d(base_profile_index,peak_profile_index)
 	#~ print peak_profile_index, only_base_index
-	guess_vals = [100,0.1,100,-0.1]
+	guess_vals = [0,100,0.1,-0.1]
 	offset,popt,pcov = mf.peak_fitter(unit1_time_total,unit1_rate_total,only_base_index,index,peak_profile_index,guess_vals)
 	#~ print i,'unit1', popt, guess_vals
 	offset_unit1_list.append(offset)
@@ -76,7 +76,7 @@ for i,index in enumerate(peak_index[:]):
 	plt.plot(unit1_time_total[peak_profile_index], offset + mf.rise_n_decay(unit1_time_total[peak_profile_index]-unit1_time_total[index],*popt),'.')
 	plt.plot(unit1_time_total[peak_profile_index], offset + mf.rise_n_decay(unit1_time_total[peak_profile_index]-unit1_time_total[index],*guess_vals),'.')
 	
-	#~ if i==361: plt.show()
+	#~ if i%100==0:plt.show()
 	plt.clf()
 	offset,popt,pcov = mf.peak_fitter(unit2_time_total,unit2_rate_total,only_base_index,index,peak_profile_index,guess_vals)
 	#~ print 'unit2',popt, guess_vals
@@ -93,5 +93,5 @@ for i,index in enumerate(peak_index[:]):
 		peak_pars_unit2 = np.vstack([peak_pars_unit2,popt])
 
 print np.shape(peak_pars_unit1)
-np.savetxt('unit1_peak_fit_values.txt',peak_pars_unit1)
+np.savetxt('unit1_peak_fit_values.txt',peak_pars_unit1)			# Add saving using astropy.ascii.write. Will help in plotting.
 np.savetxt('unit2_peak_fit_values.txt',peak_pars_unit2)

@@ -54,14 +54,15 @@ def rise_n_decay(x,*pars):
 			= A at 0. (A should be equal to A1 and A2 ) For now A1
 	
 	"""
+	x0,A,w1,w2 = pars
+
 	a = np.zeros(len(x))
-	ind_less = np.where(x<=0)[0]
-	ind_more = np.where(x>0)[0]
+	ind_less = np.where(x<=x0)[0]
+	ind_more = np.where(x>x0)[0]
 	
-	A1,w1,A2,w2 = pars
 	
-	a[ind_less] = exponential(x[ind_less],A1,w1)
-	a[ind_more] = exponential(x[ind_more],A2,w2)
+	a[ind_less] = exponential(x[ind_less],A,w1)
+	a[ind_more] = exponential(x[ind_more],A,w2)
 
 	return a
 	
@@ -276,7 +277,7 @@ def peak_fitter(time,rate,only_base_index,peak_index,peak_prof_index,guess_vals)
 	offseted_rate = rate - base_value
 	offseted_time = time - time[peak_index]
 	try:
-		popt,pcov = op.curve_fit(rise_n_decay, offseted_time[peak_prof_index],offseted_rate[peak_prof_index], p0=guess_vals, bounds = ([1,1e-3,1,-100],[20000,100,20000,-1e-3]))
+		popt,pcov = op.curve_fit(rise_n_decay, offseted_time[peak_prof_index],offseted_rate[peak_prof_index], p0=guess_vals, bounds = ([-10,1,1e-3,-100],[10,20000,100,-1e-3]))
 	except RuntimeError:
 		popt = guess_vals
 		pcov = np.reshape(np.zeros(len(popt)*len(popt)),(len(popt),len(popt)))
