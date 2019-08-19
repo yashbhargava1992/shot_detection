@@ -148,48 +148,53 @@ def peak_detector(time,rate,rerr,f=1,T=10,shot_sep=1,small_peak_flag=False, sig_
 	"""
 	
 	total_duration = time[-1]-time[0]
-	number_of_segments = int(total_duration/T)
-	jump = len(time)/number_of_segments
-	peak_index_pos = np.array([],dtype=int)
-	lower_peaks = np.array([],dtype=int)
 	
-	for i in range(0,len(time),jump):
+	if total_duration < T: 
+		if small_peak_flag: return np.array([],dtype=int),np.array([],dtype=int)
+		else: return np.array([],dtype=int)
+	else : 
+		number_of_segments = int(total_duration/T)
+		jump = len(time)/number_of_segments
+		peak_index_pos = np.array([],dtype=int)
+		lower_peaks = np.array([],dtype=int)
 		
-		if i+jump<=len(time):ind = np.arange (i,i+jump,1)				# taking care of the trailing part of the array 
-		else : ind=np.arange (i,len(time),1)							# which doesn't have the same number of points as the jump	
-		seg_time = time[ind]
-		seg_rate = rate[ind]
-		seg_rerr = rerr[ind]
-		if sig_det == 'med': sig = np.median(seg_rerr)
-		elif sig_det == 'std': sig = np.std(seg_rate)
-		elif sig_det == 'pro': 
-			print 'Propogation code is not written defaulting to med'
-			sig = np.median(seg_rerr)
-		else: 
-			print 'Use med, std or pro only. \n I am going with med'
-			sig = np.median(seg_rerr)
-		peak_pos = int(np.argmax(seg_rate))
-		peak_val = seg_rate[peak_pos]					# This value is the maximum count in the segment
-		peak_time = seg_time[peak_pos]					# This value is the position of the peak in the segment. 
-		other_peaks = np.where(seg_rate>peak_val-sig)[0]
-		lower_peaks = np.append(lower_peaks,ind[other_peaks])
-		if peak_val>np.mean(seg_rate)+sig*f:
-			if peak_index_pos.size ==0:									# To ensure the consecutive shots are far enough. This condition can be applied at the end too
-				peak_index_pos = np.append(peak_index_pos,int(ind[peak_pos]))
-			elif len(peak_index_pos) !=0 and peak_time>time[peak_index_pos][-1]+shot_sep*T:
-				peak_index_pos = np.append(peak_index_pos,int(ind[peak_pos]))
-			elif len(peak_index_pos) !=0 and peak_time<time[peak_index_pos][-1]+shot_sep*T:			# To reatin the larger peak in the shot_sep duration
-				if rate[peak_index_pos][-1] < peak_val: 
-					peak_index_pos[-1] = int(ind[peak_pos])
-				#~ print peak_index_pos.size	
-		#~ else:
-			#~ peak_index_pos = np.append(peak_index_pos,np.nan)
-	peak_index_pos = peak_index_pos.astype(int)
-	if small_peak_flag: return peak_index_pos,lower_peaks
-	else: return peak_index_pos
+		for i in range(0,len(time),jump):
+			
+			if i+jump<=len(time):ind = np.arange (i,i+jump,1)				# taking care of the trailing part of the array 
+			else : ind=np.arange (i,len(time),1)							# which doesn't have the same number of points as the jump	
+			seg_time = time[ind]
+			seg_rate = rate[ind]
+			seg_rerr = rerr[ind]
+			if sig_det == 'med': sig = np.median(seg_rerr)
+			elif sig_det == 'std': sig = np.std(seg_rate)
+			elif sig_det == 'pro': 
+				print 'Propogation code is not written defaulting to med'
+				sig = np.median(seg_rerr)
+			else: 
+				print 'Use med, std or pro only. \n I am going with med'
+				sig = np.median(seg_rerr)
+			peak_pos = int(np.argmax(seg_rate))
+			peak_val = seg_rate[peak_pos]					# This value is the maximum count in the segment
+			peak_time = seg_time[peak_pos]					# This value is the position of the peak in the segment. 
+			other_peaks = np.where(seg_rate>peak_val-sig)[0]
+			lower_peaks = np.append(lower_peaks,ind[other_peaks])
+			if peak_val>np.mean(seg_rate)+sig*f:
+				if peak_index_pos.size ==0:									# To ensure the consecutive shots are far enough. This condition can be applied at the end too
+					peak_index_pos = np.append(peak_index_pos,int(ind[peak_pos]))
+				elif len(peak_index_pos) !=0 and peak_time>time[peak_index_pos][-1]+shot_sep*T:
+					peak_index_pos = np.append(peak_index_pos,int(ind[peak_pos]))
+				elif len(peak_index_pos) !=0 and peak_time<time[peak_index_pos][-1]+shot_sep*T:			# To reatin the larger peak in the shot_sep duration
+					if rate[peak_index_pos][-1] < peak_val: 
+						peak_index_pos[-1] = int(ind[peak_pos])
+					#~ print peak_index_pos.size	
+			#~ else:
+				#~ peak_index_pos = np.append(peak_index_pos,np.nan)
+		peak_index_pos = peak_index_pos.astype(int)
+		if small_peak_flag: return peak_index_pos,lower_peaks
+		else: return peak_index_pos
 
 
-def peak_isolator(peak_index,time,del_time=None, peak_duration=10.0):
+def peak_isolator(peak_index, time, peak_duration=10.0, del_time=None):
 	"""
 	
 	This function accepts an index value(peak_index) and returns a set of indices around that peak. 
