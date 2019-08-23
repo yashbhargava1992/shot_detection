@@ -1,4 +1,5 @@
 import numpy as np 
+import scipy.optimize as op
 
 def rebinner(x,y,rebin_factor,rate_flag):
 	"""
@@ -39,8 +40,32 @@ def gap_detector (time,f=3, dt=None):
 	return index_gap_start
 	
 	
+def exponential(x,*pars):
+	# Assumed form y = A*e^(w*x) w can be +ve for rise and -ve for decay, offset to be applied additionally
+	A,w = pars
+	return A*np.exp(x*w)
+	
+def rise_n_decay(x,*pars):
+	"""
+	The function takes in the time as x, peak time is assumed to be 0 and pars as A1,w1,A2,w2
+	
+	f(x) 	= A1*np.exp(w1*(x-x0)) for x<0
+			= A2*np.exp(w2*(x-x0)) for x>0			Assumes w2<0
+			= A at 0. (A should be equal to A1 and A2 ) For now A1
+	
+	"""
+	a = np.zeros(len(x))
+	ind_less = np.where(x<=0)[0]
+	ind_more = np.where(x>0)[0]
+	
+	A1,w1,A2,w2 = pars
+	
+	a[ind_less] = exponential(x[ind_less],A1,w1)
+	a[ind_more] = exponential(x[ind_more],A2,w2)
 
-
+	return a
+	
+	
 
 def error_propagator_for_ratio(num,num_err,den,den_err,ratio_flag=False):
 	"""
@@ -161,5 +186,145 @@ def peak_detector(time,rate,rerr,f=1,T=10,shot_sep=1,small_peak_flag=False, sig_
 	peak_index_pos = peak_index_pos.astype(int)
 	if small_peak_flag: return peak_index_pos,lower_peaks
 	else: return peak_index_pos
+
+
+def peak_isolator(peak_index,time, peak_duration=10.0,del_time=None):
+	"""
 	
-	 
+	This function accepts an index value(peak_index) and returns a set of indices around that peak. 
+	The duration around the peak is defaulted to 10s i.e. plus/minus 5s around the peak.
+	
+	INPUT:
+	
+	peak_index					: The position around which the indices will be returned
+	time						: The time array corresponding to the peak_index
+	del_time					: The minimum time bin of the time array (used to convert time to indices)
+	peak_duration				: Duration of the peak Default value 10s
+	
+	
+	OUTPUT:
+	
+	peak_profile_indices		: Array of index which correspond to the peak. 
+	
+	
+	"""	
+	
+	diff = time[1:]-time[:-1]
+	
+	if del_time == None: del_time = np.median (diff)
+	
+	index_gap_start = gap_detector(time,3,del_time)
+	
+	number_of_indices = int(np.ceil(peak_duration/del_time))
+	
+	# Checking if the current peak is too close to a gap
+	distance_from_gap = index_gap_start-peak_index
+	#~ print distance_from_gap
+	
+	closest_distance = np.argmin(np.abs(distance_from_gap))
+	
+	if (np.abs(distance_from_gap[closest_distance])< number_of_indices/2) or peak_index < number_of_indices/2 or peak_index > len(time)-number_of_indices/2 :
+		
+		# The gap assumes that the peak is quite in the middle. If the gap is quite to the edge of the data then add the appropriate conditions
+		
+		#~ if distance_from_gap[closest_distance] >= 0 or peak_index < number_of_indices/2:	
+			#~ # Means that the gap starts shortly after the peak and checking if the start of the index is not terribly close to the start of the data set
+			#~ peak_profile_indices = np.arange(max(0,peak_index - number_of_indices/2),index_gap_start[closest_distance],1)
+		
+		#~ elif distance_from_gap[closest_distance] < 0 or peak_index > len(time)-number_of_indices/2:
+			#~ # Means that the gap ends shortly before the peak, +1 to gap start is done to get the gap end index and checking if the end of index is not quite close to end of data
+			#~ peak_profile_indices = np.arange(index_gap_start[closest_distance]+1, min(len(time),peak_index + number_of_indices/2 + 1), 1)
+		
+		
+		#~ else : 
+			#~ print "The peak is at exactly gap start. Something is really wrong!!!!!!"
+		peak_profile_indices=[]
+	
+	else:
+		peak_profile_indices = np.arange(peak_index - number_of_indices/2, peak_index + number_of_indices/2+1,1)
+	
+	return peak_profile_indices
+
+
+def peak_fitter(time,rate,only_base_index,peak_index,peak_prof_index,guess_vals):
+	"""
+	
+	This function will take in the short segment corresponding to the peak profile and fit it with a exponential rise and decay
+	
+	The base line is computed using only_base_index. For best results provide a set of index which are not common with peak_index
+	
+	
+	INPUT:
+	
+	time						: Time array  
+	rate						: Rate array
+	only_base_index				: Indices of the time/rate corresponding to the area around the peak
+	peak_index					: Index of the time/rate corresponding to the peak
+	peak_prof_index				: Indices of the time/rate corresponding to the peak profile, whose parameters are to be estimated
+	
+	
+	OUTPUT:
+	
+	fit_pars					: The fit parameters of the peak Include - offset, rise_time,rise_max, decay_time,decay_max 
+	
+	
+	Play with the parameters and determine the set of parameters to be used finally
+	"""
+
+	base_value = np.mean(rate[only_base_index])
+	offseted_rate = rate - base_value
+	offseted_time = time - time[peak_index]
+	try:
+		popt,pcov = op.curve_fit(rise_n_decay, offseted_time[peak_prof_index],offseted_rate[peak_prof_index], p0=guess_vals, bounds = ([1,1e-3,1,-100],[20000,100,20000,-1e-3]))
+	except RuntimeError:
+		popt = guess_vals
+		pcov = np.reshape(np.zeros(len(popt)*len(popt)),(len(popt),len(popt)))
+	return base_value, popt, pcov
+
+def peak_add(time, rate, index_list):
+	"""
+	This function takes the light curve time and rate, and the list of shot peak indices
+	And returns a co-added profile of all the shot peaks in that light curve
+	
+	
+	INPUT:
+	
+	time						: Time array  
+	rate						: Rate array
+	peak_index					: Index of the time/rate corresponding to the peak
+	
+	
+	OUTPUT:
+	
+	peak_added					: The co-added shot profile 
+	count_peak					: Number of peaks
+	
+	"""
+
+	peak_added=[]
+	count_peak=0
+	for i, peak_ind in enumerate(index_list) :
+		peak=peak_isolator(peak_ind, time)
+	
+		#print i,peak_ind,len(peak_band1)
+		if len(peak)>0 :
+			if count_peak==0 :
+				peak_added= np.append(peak_added, rate[peak])
+				count_peak+=1
+				
+			else :
+				peak_added=peak_added+rate[peak]
+				count_peak+=1
+	return peak_added,count_peak
+			
+def orb_phase(time, *args):
+	"""
+	This function takes a time array and returns an orbital phase array
+	"""
+	
+	p, dp, d2p, t0 = args
+	diff=time-t0
+	phase= diff/p-0.5*diff*diff*dp/(p*p)-1.0/6.0*(d2p/(p*p)-dp*dp/(p*p*p))
+	
+	phase=phase-np.floor(phase)
+	return phase
