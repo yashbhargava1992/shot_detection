@@ -16,6 +16,7 @@ import my_funcs as mf
 
 data_path = "../lc_data/"
 #~ data_path = "../orbitwise_lxp/"
+#~ data_path = ""
 
 unit1_data_band1	= fits.open(data_path+"laxpc_lc_0p05_unit1_3.0_80.0keV.lc")
 unit1_data_band2	= fits.open(data_path+"laxpc_lc_0p05_unit1_5.0_10.0keV.lc")
@@ -32,14 +33,14 @@ unit3_data_band3 	= fits.open(data_path+"laxpc_lc_0p05_unit3_10.0_20.0keV.lc")
 #~ back_unit1_data_band3 = fits.open(data_path+"Back_lightcurve_L1_10.0_20.0keV.lc")
 
 unit1_time_band1, unit1_rate_band1, unit1_r_er_band1 = mf.data_extractor(unit1_data_band1)
-unit2_time_band1, unit2_rate_band1, unit2_r_er_band1 = mf.data_extractor(unit2_data_band1)
-unit3_time_band1, unit3_rate_band1, unit3_r_er_band1 = mf.data_extractor(unit3_data_band1)
-unit1_time_band2, unit1_rate_band2, unit1_r_er_band2 = mf.data_extractor(unit1_data_band2)
-unit2_time_band2, unit2_rate_band2, unit2_r_er_band2 = mf.data_extractor(unit2_data_band2)
-unit3_time_band2, unit3_rate_band2, unit3_r_er_band2 = mf.data_extractor(unit3_data_band2)
-unit1_time_band3, unit1_rate_band3, unit1_r_er_band3 = mf.data_extractor(unit1_data_band3)
-unit2_time_band3, unit2_rate_band3, unit2_r_er_band3 = mf.data_extractor(unit2_data_band3)
-unit3_time_band3, unit3_rate_band3, unit3_r_er_band3 = mf.data_extractor(unit3_data_band3)
+#~ unit2_time_band1, unit2_rate_band1, unit2_r_er_band1 = mf.data_extractor(unit2_data_band1)
+#~ unit3_time_band1, unit3_rate_band1, unit3_r_er_band1 = mf.data_extractor(unit3_data_band1)
+#~ unit1_time_band2, unit1_rate_band2, unit1_r_er_band2 = mf.data_extractor(unit1_data_band2)
+#~ unit2_time_band2, unit2_rate_band2, unit2_r_er_band2 = mf.data_extractor(unit2_data_band2)
+#~ unit3_time_band2, unit3_rate_band2, unit3_r_er_band2 = mf.data_extractor(unit3_data_band2)
+#~ unit1_time_band3, unit1_rate_band3, unit1_r_er_band3 = mf.data_extractor(unit1_data_band3)
+#~ unit2_time_band3, unit2_rate_band3, unit2_r_er_band3 = mf.data_extractor(unit2_data_band3)
+#~ unit3_time_band3, unit3_rate_band3, unit3_r_er_band3 = mf.data_extractor(unit3_data_band3)
 
 #~ back_unit1_time_band1, back_unit1_rate_band1, back_unit1_r_er_band1 = mf.data_extractor(back_unit1_data_band1)
 #~ back_unit1_time_band2, back_unit1_rate_band2, back_unit1_r_er_band2 = mf.data_extractor(back_unit1_data_band2)
@@ -58,14 +59,14 @@ list_of_peak_times = []
 #~ jump = len(unit1_time_band1)/246
 #~ for i in range(0,len(unit1_time_band1),jump):
 for i,seg_end in enumerate(gap_start):
-	
+
 	#~ if i+jump<=len(unit1_time_band1):short_seg = np.arange(i,i+jump,1)
 	#~ else: short_seg = np.arange(i,len(unit1_time_band1),1)
 	if i==0: short_seg = np.arange(0,seg_end,1)
 	elif i==len(gap_start)-1: 
 		short_seg = np.arange(gap_end[i],len(unit1_time_band1),1)
 	else: short_seg = np.arange(gap_end[i-1],seg_end,1)
-	
+
 	#~ print 'short_seg', short_seg
 	# Plotting shots in Band 1
 	ax1 = plt.subplot(211)
@@ -82,12 +83,12 @@ for i,seg_end in enumerate(gap_start):
 	
 	
 	# Plotting the same pos in Band 2
-	ax2 = plt.subplot(212,sharex=ax1)
-	ax2.errorbar(unit2_time_band1[short_seg], unit2_rate_band1[short_seg], yerr=unit2_r_er_band1[short_seg],alpha=0.5,color='grey')
+	#~ ax2 = plt.subplot(212,sharex=ax1)
+	#~ ax2.errorbar(unit2_time_band1[short_seg], unit2_rate_band1[short_seg], yerr=unit2_r_er_band1[short_seg],alpha=0.5,color='grey')
 	#~ ax2.plot(unit2_time_band1[short_seg][other_peaks], unit2_rate_band1[short_seg][other_peaks],'or',label='Other peaks')
-	ax2.plot(unit2_time_band1[short_seg][peak_pos], unit2_rate_band1[short_seg][peak_pos],'og',label='SHOT')
-	ax2.set_ylabel('Count rate Unit2')
-	ax2.set_xlabel('Time in s')
+	#~ ax2.plot(unit2_time_band1[short_seg][peak_pos], unit2_rate_band1[short_seg][peak_pos],'og',label='SHOT')
+	#~ ax2.set_ylabel('Count rate Unit2')
+	#~ ax2.set_xlabel('Time in s')
 
 	
 	# PLotting the ratio of the counts in B2 and B1

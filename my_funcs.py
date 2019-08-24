@@ -243,10 +243,6 @@ def peak_isolator(peak_index, time, peak_duration=10.0, del_time=None):
 			#~ print index_gap_start[closest_distance]+1, min(len(time)-1,peak_index + number_of_indices/2)
 			peak_profile_indices = np.arange(index_gap_start[closest_distance]+1, min(len(time),peak_index + number_of_indices/2 + 1), 1)
 		
-		
-		#~ else : 
-			#~ print "The peak is at exactly gap start. Something is really wrong!!!!!!"
-	
 	else:
 		peak_profile_indices = np.arange(peak_index - number_of_indices/2, peak_index + number_of_indices/2+1,1)
 	
@@ -283,8 +279,57 @@ def peak_fitter(time,rate,only_base_index,peak_index,peak_prof_index,guess_vals)
 	offseted_time = time - time[peak_index]
 	try:
 		popt,pcov = op.curve_fit(rise_n_decay, offseted_time[peak_prof_index],offseted_rate[peak_prof_index], p0=guess_vals, bounds = ([-10,1,1e-3,-100],[10,20000,100,-1e-3]))
+
 	except RuntimeError:
 		popt = guess_vals
 		pcov = np.reshape(np.zeros(len(popt)*len(popt)),(len(popt),len(popt)))
 	return base_value, popt, pcov
+
+
+def peak_add(time, rate, index_list):
+	"""
+	This function takes the light curve time and rate, and the list of shot peak indices
+	And returns a co-added profile of all the shot peaks in that light curve
 	
+	
+	INPUT:
+	
+	time						: Time array  
+	rate						: Rate array
+	peak_index					: Index of the time/rate corresponding to the peak
+	
+	
+	OUTPUT:
+	
+	peak_added					: The co-added shot profile 
+	count_peak					: Number of peaks
+	
+	"""
+
+	peak_added=[]
+	count_peak=0
+	for i, peak_ind in enumerate(index_list) :
+		peak=peak_isolator(peak_ind, time)
+	
+		#print i,peak_ind,len(peak_band1)
+		if len(peak)>0 :
+			if count_peak==0 :
+				peak_added= np.append(peak_added, rate[peak])
+				count_peak+=1
+				
+			else :
+				peak_added=peak_added+rate[peak]
+				count_peak+=1
+	return peak_added,count_peak
+			
+def orb_phase(time, *args):
+	"""
+	This function takes a time array and returns an orbital phase array
+	"""
+	
+	p, dp, d2p, t0 = args
+	diff=time-t0
+	phase= diff/p-0.5*diff*diff*dp/(p*p)-1.0/6.0*(d2p/(p*p)-dp*dp/(p*p*p))
+	
+	phase=phase-np.floor(phase)
+	return phase
