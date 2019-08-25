@@ -93,3 +93,38 @@ for i in range (1,number_of_columns+1):
 		ax2.set_xlabel('Time of the shot')
 
 plt.show()
+
+# Plotting co-added shots
+
+peak_added_band1 = np.loadtxt('co_added_0456_laxpc20_3.0_5.0_keV.txt')		# Saving the list of indices to be used with 0.05 s LC of the observation. 
+peak_added_band2 = np.loadtxt('co_added_0456_laxpc20_5.0_10.0_keV.txt')
+peak_added_band3 = np.loadtxt('co_added_0456_laxpc20_10.0_20.0_keV.txt')
+peak_added_band4 = np.loadtxt('co_added_0456_laxpc20_20.0_40.0_keV.txt')
+peak_added_band5 = np.loadtxt('co_added_0456_laxpc20_40.0_80.0_keV.txt')
+
+
+ratio1=peak_added_band2/peak_added_band1
+ratio2=peak_added_band3/peak_added_band1
+ratio3=peak_added_band4/peak_added_band1
+ratio4=peak_added_band5/peak_added_band1
+
+ax1 = plt.subplot(411)
+ax1.plot(ratio1, color='C1', marker='.', linestyle='None')
+ax1.set_ylabel('Ratio 5-10/3-5 keV')
+
+ax2 = plt.subplot(412, sharex=ax1)
+ax2.plot(ratio2, color='C2', marker='.', linestyle='None')
+ax2.set_ylabel('Ratio 10-20/3-5 keV')
+
+
+ax3 = plt.subplot(413, sharex=ax1)
+ax3.plot(ratio3, color='C0', marker='.', linestyle='None')
+ax3.set_ylabel('Ratio 20-40/3-5 keV')
+
+ax3 = plt.subplot(414, sharex=ax1)
+ax3.plot(ratio3, color='C3', marker='.', linestyle='None')
+ax3.set_ylabel('Ratio 40-80/3-5 keV')
+
+plt.legend()
+plt.show()
+

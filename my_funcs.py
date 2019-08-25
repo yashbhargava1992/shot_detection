@@ -194,7 +194,7 @@ def peak_detector(time,rate,rerr,f=1,T=10,shot_sep=1,small_peak_flag=False, sig_
 		else: return peak_index_pos
 
 
-def peak_isolator(peak_index, time, peak_duration=10.0, del_time=None):
+def peak_isolator(peak_index, time, peak_duration=10.0, del_time=None,inexact_flag=True):
 	"""
 	
 	This function accepts an index value(peak_index) and returns a set of indices around that peak. 
@@ -206,12 +206,15 @@ def peak_isolator(peak_index, time, peak_duration=10.0, del_time=None):
 	time						: The time array corresponding to the peak_index
 	del_time					: The minimum time bin of the time array (used to convert time to indices)
 	peak_duration				: Duration of the peak Default value 10s
-	
+	inexact_flag				: If true, then the function is checking if the peak is near boundaries and sending appropriate indices
+								  If false, then the function checks and returns blank array 
 	
 	OUTPUT:
 	
 	peak_profile_indices		: Array of index which correspond to the peak. 
 	
+	Note: The inexact_flag can be used if all the peaks are required to be considered, whether they are very close to a gap 
+	(i.e. may have lesser points on either side and thus may have less information)
 	
 	"""	
 	
@@ -230,23 +233,31 @@ def peak_isolator(peak_index, time, peak_duration=10.0, del_time=None):
 	
 	closest_distance = np.argmin(np.abs(distance_from_gap))
 	
-	if (np.abs(distance_from_gap[closest_distance])< number_of_indices/2) or peak_index < number_of_indices/2 or peak_index > len(time)-number_of_indices/2 :
-		
-		# The gap assumes that the peak is quite in the middle. If the gap is quite to the edge of the data then add the appropriate conditions
-		
-		if distance_from_gap[closest_distance] >= 0 or peak_index < number_of_indices/2:	
-			# Means that the gap starts shortly after the peak and checking if the start of the index is not terribly close to the start of the data set
-			peak_profile_indices = np.arange(max(0,peak_index - number_of_indices/2),index_gap_start[closest_distance],1)
-		
-		elif distance_from_gap[closest_distance] < 0 or peak_index > len(time)-number_of_indices/2:
-			# Means that the gap ends shortly before the peak, +1 to gap start is done to get the gap end index and checking if the end of index is not quite close to end of data
-			#~ print index_gap_start[closest_distance]+1, min(len(time)-1,peak_index + number_of_indices/2)
-			peak_profile_indices = np.arange(index_gap_start[closest_distance]+1, min(len(time),peak_index + number_of_indices/2 + 1), 1)
-		
-	else:
-		peak_profile_indices = np.arange(peak_index - number_of_indices/2, peak_index + number_of_indices/2+1,1)
-	
-	return peak_profile_indices
+	if inexact_flag:
+		if (np.abs(distance_from_gap[closest_distance])< number_of_indices/2) or peak_index < number_of_indices/2 or peak_index > len(time)-number_of_indices/2 :
+			
+			# The gap assumes that the peak is quite in the middle. If the gap is quite to the edge of the data then add the appropriate conditions
+			
+			if distance_from_gap[closest_distance] >= 0 or peak_index < number_of_indices/2:	
+				# Means that the gap starts shortly after the peak and checking if the start of the index is not terribly close to the start of the data set
+				peak_profile_indices = np.arange(max(0,peak_index - number_of_indices/2),index_gap_start[closest_distance],1)
+			
+			elif distance_from_gap[closest_distance] < 0 or peak_index > len(time)-number_of_indices/2:
+				# Means that the gap ends shortly before the peak, +1 to gap start is done to get the gap end index and checking if the end of index is not quite close to end of data
+				#~ print index_gap_start[closest_distance]+1, min(len(time)-1,peak_index + number_of_indices/2)
+				peak_profile_indices = np.arange(index_gap_start[closest_distance]+1, min(len(time),peak_index + number_of_indices/2 + 1), 1)
+			
+		else:
+			peak_profile_indices = np.arange(peak_index - number_of_indices/2, peak_index + number_of_indices/2+1,1)
+
+	else :
+		if (np.abs(distance_from_gap[closest_distance])< number_of_indices/2) or peak_index < number_of_indices/2 or peak_index > len(time)-number_of_indices/2 :
+			peak_profile_indices = []
+		else:
+			peak_profile_indices = np.arange(peak_index - number_of_indices/2, peak_index + number_of_indices/2+1,1)
+	if len(peak_profile_indices)>0: 	return peak_profile_indices.astype(int)
+	elif len(peak_profile_indices)==0: 	return peak_profile_indices
+
 
 
 def peak_fitter(time,rate,only_base_index,peak_index,peak_prof_index,guess_vals):
@@ -309,10 +320,9 @@ def peak_add(time, rate, index_list):
 	peak_added=[]
 	count_peak=0
 	for i, peak_ind in enumerate(index_list) :
-		peak=peak_isolator(peak_ind, time)
-	
-		#print i,peak_ind,len(peak_band1)
-		if len(peak)>0 :
+		peak=peak_isolator(peak_ind, time,inexact_flag = False)		# The inexact flag will return blank array if the peak is quit close to a gap
+		#~ print i,peak
+		if len(peak)>0 :						# To ignore the peaks which are occurring quite near the gaps
 			if count_peak==0 :
 				peak_added= np.append(peak_added, rate[peak])
 				count_peak+=1
