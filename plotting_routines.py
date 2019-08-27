@@ -1,5 +1,8 @@
 
-# THe program will plot the pairwise variation of the parameters. 
+# The program will plot the pairwise variation of the parameters, 
+# Variation of parameters with time and co-added shots. 
+# Note: Run this program after running shot_fitting, shot_ratio, shot_selector
+
 
 
 import numpy as np
@@ -13,8 +16,11 @@ rc('font',**{'size':14} )
 unit1_peak_features = np.loadtxt('unit1_peak_fit_values.txt')
 unit2_peak_features = np.loadtxt('unit2_peak_fit_values.txt')
 peak_time_from_file = np.loadtxt('peak_time_list_0p05_unit1.txt')
+good_index 			= np.loadtxt('shot_flag.txt')
+#~ good_index 			= np.ones(len(peak_time_from_file))		# Use this if all peaks are to be plotted
 
-print len(unit1_peak_features),len(peak_time_from_file)
+good_index 	= good_index.astype(bool)
+print len(unit1_peak_features),len(peak_time_from_file), good_index
 #~ plt.plot(unit1_peak_features[:,0],unit2_peak_features[:,0],'.')
 #~ plt.show()
 
@@ -31,7 +37,7 @@ for i in range (1,number_of_columns+1,1):
 	for j in range (1,i+1,1):
 		ax1 = plt.subplot(number_of_columns,number_of_columns,(i-1)*number_of_columns+j)
 				
-		ax1.plot(np.abs(unit1_peak_features[:,j-1]),np.abs(unit1_peak_features[:,i-1]),marker='.',linestyle='None', markersize=0.5, color='k')
+		ax1.plot(np.abs(unit1_peak_features[:,j-1])[good_index],np.abs(unit1_peak_features[:,i-1])[good_index],marker='.',linestyle='None', markersize=0.5, color='k')
 		#~ ax1.set_xscale('log')
 		#~ ax1.set_yscale('log')
 		ax1.tick_params(right=True, top = True,direction = 'in')
@@ -44,6 +50,7 @@ for i in range (1,number_of_columns+1,1):
 			ax1.tick_params(direction = 'inout')
 		else: ax1.tick_params(labelleft=False)
 
+#~ plt.show()
 plt.savefig('Parameter_var_unit1_fitted_time.pdf')
 plt.clf()
 
@@ -57,7 +64,7 @@ for i in range (1,number_of_columns+1,1):
 	for j in range (1,i+1,1):
 		ax1 = plt.subplot(number_of_columns,number_of_columns,(i-1)*number_of_columns+j)
 				
-		ax1.plot(np.abs(unit1_peak_features[:,j-1]),np.abs(unit1_peak_features[:,i-1]),marker='.',linestyle='None', markersize=0.5, color='k')
+		ax1.plot(np.abs(unit1_peak_features[:,j-1])[good_index],np.abs(unit1_peak_features[:,i-1])[good_index],marker='.',linestyle='None', markersize=0.5, color='k')
 		#~ ax1.set_xscale('log')
 		#~ ax1.set_yscale('log')
 		ax1.tick_params(right=True, top = True,direction = 'in')
@@ -80,13 +87,13 @@ fig.subplots_adjust(hspace=0, wspace=0,top=0.95, bottom=0.1,left = 0.15)
 for i in range (1,number_of_columns+1):
 	if i==1 : 
 		ax1 = plt.subplot(number_of_columns,1,i)
-		ax1.plot(peak_time_from_file,np.abs(unit1_peak_features[:,i-1]),'.C0')
-		ax1.plot(peak_time_from_file,np.abs(unit2_peak_features[:,i-1]),'.C1')
+		ax1.plot(peak_time_from_file[good_index],np.abs(unit1_peak_features[:,i-1])[good_index],'.C0')
+		ax1.plot(peak_time_from_file[good_index],np.abs(unit2_peak_features[:,i-1])[good_index],'.C1')
 		ax1.set_ylabel(labels[i-1])
 	else : 
 		ax2 = plt.subplot(number_of_columns,1,i,sharex=ax1)
-		ax2.plot(peak_time_from_file,np.abs(unit1_peak_features[:,i-1]),'.C0')
-		ax2.plot(peak_time_from_file,np.abs(unit2_peak_features[:,i-1]),'.C1')
+		ax2.plot(peak_time_from_file[good_index],np.abs(unit1_peak_features[:,i-1])[good_index],'.C0')
+		ax2.plot(peak_time_from_file[good_index],np.abs(unit2_peak_features[:,i-1])[good_index],'.C1')
 		ax2.set_ylabel(labels[i-1])
 		ax2.set_yscale('log')
 	if i== number_of_columns:
