@@ -14,6 +14,9 @@ from astropy.io import fits
 import my_funcs as mf
 
 
+data_path = "../lc_data/"
+unit1_data_total	= fits.open(data_path+"laxpc_lc_0p05_unit1_3.0_80.0keV.lc")
+unit1_time_total, unit1_rate_total, unit1_r_er_total = mf.data_extractor(unit1_data_total)
 
 unit1_peak_features = np.loadtxt('unit1_peak_fit_values.txt')
 unit2_peak_features = np.loadtxt('unit2_peak_fit_values.txt')
@@ -32,8 +35,10 @@ good_fits_flag = np.ones(len(peak_index))					# We will store 1 for good fit and
 boundary_frac_dist = 1e-1								# How far from the boundary the fit parameter has to be
 
 for i,par in enumerate(labels):
-	bad_fit_index = np.where( (np.abs(unit1_peak_features[:,i] - min_bound[i])<boundary_frac_dist * np.abs(min_bound[i])) | (np.abs(unit1_peak_features[:,i] - max_bound[i])< boundary_frac_dist * np.abs(max_bound[i])) 
-							| (np.abs(unit2_peak_features[:,i] - min_bound[i])<boundary_frac_dist * np.abs(min_bound[i])) | (np.abs(unit2_peak_features[:,i] - max_bound[i])< boundary_frac_dist * np.abs(max_bound[i])) ) [0]
+	bad_fit_index = np.where( (np.abs(unit1_peak_features[:,i] - min_bound[i])< boundary_frac_dist * np.abs(min_bound[i])) 
+							| (np.abs(unit1_peak_features[:,i] - max_bound[i])< boundary_frac_dist * np.abs(max_bound[i])) 
+							| (np.abs(unit2_peak_features[:,i] - min_bound[i])< boundary_frac_dist * np.abs(min_bound[i])) 
+							| (np.abs(unit2_peak_features[:,i] - max_bound[i])< boundary_frac_dist * np.abs(max_bound[i])) ) [0]
 	good_fits_flag[bad_fit_index] = 0
 
 print len(good_fits_flag), np.sum(good_fits_flag)	
@@ -54,3 +59,14 @@ for i in range (1,np.shape(unit1_peak_features)[1]):
 print len(good_fits_flag), np.sum(good_fits_flag), np.sum(shot_flag)
 
 np.savetxt("shot_flag.txt",shot_flag)
+
+
+gti_start 	= []
+gti_stop	= []
+
+for i, peak_ind in enumerate(peak_index[shot_flag]):
+	peak_indices = mf.peak_isolator(peak_ind,unit1_time_total,peak_duration=4)
+	gti_start.append(unit1_time_total[peak_indices[0]])
+	gti_stop.append(unit1_time_total[peak_indices[-1]])
+
+np.savetxt("GTI_shots.txt",np.transpose([gti_start,gti_stop]))
