@@ -48,7 +48,10 @@ for i in range (1,number_of_columns+1,1):
 		if j==1: 
 			ax1.set_ylabel(labels[i-1])		# Putting labels only at the edge of the triangle
 			ax1.tick_params(direction = 'inout')
-		else: ax1.tick_params(labelleft=False)
+		else: 
+			ax1.tick_params(labelleft=False)
+			ax1.set_yscale('log')
+			ax1.set_xscale('log')
 
 #~ plt.show()
 plt.savefig('Parameter_var_unit1_fitted_time.pdf')
