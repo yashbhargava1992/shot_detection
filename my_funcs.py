@@ -343,3 +343,41 @@ def orb_phase(time, *args):
 	
 	phase=phase-np.floor(phase)
 	return phase
+
+def peak_segmenter(peak_index, time, number_of_segments, peak_duration = 10.0, ):
+	"""
+	This function will take the index of the peak and return set of indices in a 2d format.
+	 Each row will correspond to one set of indices which can be manipulated further
+	
+	
+	INPUT:
+	
+	peak_index					: The position around which the indices will be returned
+	time						: The time array corresponding to the peak_index
+	number_of_segments			: The number of segments the peak has to be divided
+	peak_duration				: Duration of the peak Default value 10s
+	
+	
+	OUTPUT:
+	
+	array_indices				: 2d array of indices which can be used to extract spec/pds
+	
+	"""
+	
+	peak_indices = peak_isolator(peak_index, time, peak_duration)
+	
+	# If the number of elements in peak is not an exact multiple of number of segments, then crop elements on both side to make is the same length
+	len_peak = len(peak_indices)
+	segment_length = len_peak/number_of_segments
+	if len_peak - segment_length*number_of_segments !=0:
+		if (len_peak - segment_length*number_of_segments )%2 == 0: 
+			crop_minus = (len_peak - segment_length*number_of_segments )/2
+			crop_plus = (len_peak - segment_length*number_of_segments )/2
+		else:
+			crop_minus = (len_peak - segment_length*number_of_segments )/2+1
+			crop_plus = (len_peak - segment_length*number_of_segments )/2
+		#~ print crop_minus,crop_plus,len_peak	
+		array_indices = np.reshape(peak_indices[crop_minus:-crop_plus],(number_of_segments,segment_length))
+	else: 
+		array_indices = np.reshape(peak_indices,(number_of_segments,segment_length))
+	return array_indices
