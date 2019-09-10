@@ -1,5 +1,6 @@
 import numpy as np 
 import scipy.optimize as op
+import matplotlib.pyplot as plt
 
 def rebinner(x,y,rebin_factor,rate_flag):
 	"""
@@ -315,6 +316,49 @@ def peak_add(time, rate, index_list):
 			else :
 				peak_added=peak_added+rate[peak]
 				count_peak+=1
+	return peak_added,count_peak
+
+def peak_add_timestamp(time, rate, peaktime_list):
+	"""
+	This function takes the light curve time and rate, and the list of shot peak timestamps
+	And returns a co-added profile of all the shot peaks in that light curve
+	
+	
+	INPUT:
+	
+	time						: Time array  
+	rate						: Rate array
+	peaktime_list				: Timestamps corresponding to the peaks
+	
+	
+	OUTPUT:
+	
+	peak_added					: The co-added shot profile 
+	count_peak					: Number of peaks
+	
+	"""
+
+	peak_added=[]
+	count_peak=0
+	for i, peak_ts in enumerate(peaktime_list) :
+		timediff=np.abs(time-peak_ts)
+		peak_ind=np.argmin(timediff)
+		#~ print peak_ind, min(timediff)
+		peak=peak_isolator(peak_ind, time)
+	
+		if len(peak)>0 :
+			if count_peak==0 :
+				peak_added= np.append(peak_added, rate[peak])
+				count_peak+=1
+				
+			else :
+				peak_added=peak_added+rate[peak]
+				#~ plt.plot(rate[peak])
+				#~ plt.show()
+				count_peak+=1
+			print peak_ind
+				#~ plt.plot(rate[peak])
+				#~ plt.show()
 	return peak_added,count_peak
 			
 def orb_phase(time, *args):
