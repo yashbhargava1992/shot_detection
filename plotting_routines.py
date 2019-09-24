@@ -37,7 +37,8 @@ for i in range (1,number_of_columns+1,1):
 	for j in range (1,i+1,1):
 		ax1 = plt.subplot(number_of_columns,number_of_columns,(i-1)*number_of_columns+j)
 				
-		ax1.plot(np.abs(unit1_peak_features[:,j-1])[good_index],np.abs(unit1_peak_features[:,i-1])[good_index],marker='.',linestyle='None', markersize=0.5, color='k')
+		if i!=j: ax1.plot(np.abs(unit1_peak_features[:,j-1])[good_index],np.abs(unit1_peak_features[:,i-1])[good_index],marker='.',linestyle='None', markersize=0.5, color='k')
+		else : ax1.hist(np.abs(unit1_peak_features[:,j-1][good_index]),100)
 		#~ ax1.set_xscale('log')
 		#~ ax1.set_yscale('log')
 		ax1.tick_params(right=True, top = True,direction = 'in')
@@ -67,7 +68,8 @@ for i in range (1,number_of_columns+1,1):
 	for j in range (1,i+1,1):
 		ax1 = plt.subplot(number_of_columns,number_of_columns,(i-1)*number_of_columns+j)
 				
-		ax1.plot(np.abs(unit1_peak_features[:,j-1])[good_index],np.abs(unit1_peak_features[:,i-1])[good_index],marker='.',linestyle='None', markersize=0.5, color='k')
+		if i!=j: ax1.plot(np.abs(unit1_peak_features[:,j-1])[good_index],np.abs(unit1_peak_features[:,i-1])[good_index],marker='.',linestyle='None', markersize=0.5, color='k')
+		else: ax1.hist(np.abs(unit1_peak_features[:,j-1])[good_index],100)
 		#~ ax1.set_xscale('log')
 		#~ ax1.set_yscale('log')
 		ax1.tick_params(right=True, top = True,direction = 'in')
@@ -78,11 +80,42 @@ for i in range (1,number_of_columns+1,1):
 		if j==1: 
 			ax1.set_ylabel(labels[i-1])		# Putting labels only at the edge of the triangle
 			ax1.tick_params(direction = 'inout')
-		else: ax1.tick_params(labelleft=False)
+		else: 
+			ax1.tick_params(labelleft=False)
+			ax1.set_yscale('log')
+			ax1.set_xscale('log')
 
 plt.savefig('Parameter_var_unit2_fitted_time.pdf')
 #~ plt.show()
 plt.clf()
+
+plt.suptitle("Unit 1/2 peak parameters for exp rise and decay")
+number_of_columns = np.shape(unit2_peak_features)[1]
+for i in range (1,number_of_columns+1,1):
+	for j in range (1,i+1,1):
+		ax1 = plt.subplot(number_of_columns,number_of_columns,(i-1)*number_of_columns+j)
+				
+		if i!=j: ax1.plot(np.abs(unit1_peak_features[:,j-1]),np.abs(unit2_peak_features[:,i-1]),marker='.',linestyle='None', markersize=0.5, color='k')
+		else: ax1.hist(np.abs(unit1_peak_features[:,j-1]),100)
+		#~ ax1.set_xscale('log')
+		#~ ax1.set_yscale('log')
+		ax1.tick_params(right=True, top = True,direction = 'in')
+		if i==4: 
+			ax1.set_xlabel(labels[j-1])		# Putting labels only at the edge of the triangle
+			ax1.tick_params(direction = 'inout')
+		else: ax1.tick_params(labelbottom=False)
+		if j==1: 
+			ax1.set_ylabel(labels[i-1])		# Putting labels only at the edge of the triangle
+			ax1.tick_params(direction = 'inout')
+		else: 
+			ax1.tick_params(labelleft=False)
+			ax1.set_yscale('log')
+			ax1.set_xscale('log')
+
+plt.savefig('Parameter_var_unit1_2_fitted_time.pdf')
+plt.show()
+plt.clf()
+
 
 fig = plt.figure (figsize=(10,9))
 fig.subplots_adjust(hspace=0, wspace=0,top=0.95, bottom=0.1,left = 0.15)
