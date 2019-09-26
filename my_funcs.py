@@ -49,12 +49,15 @@ def rise_n_decay(x,*pars):
 	"""
 	The function takes in the time as x, peak time is assumed to be 0 and pars as A1,w1,A2,w2
 	
-	f(x) 	= A1*np.exp(w1*(x-x0)) for x<0
-			= A2*np.exp(w2*(x-x0)) for x>0			Assumes w2<0
+	f(x) 	= A1*np.exp(w1*(x-x0)) for x<x0
+			= A2*np.exp(w2*(x-x0)) for x>x0			Assumes w2<0
 			= A at 0. (A should be equal to A1 and A2 ) For now A1
 	
 	"""
-	x0,A,w1,w2 = pars
+	if len(pars)==4: x0,A,w1,w2 = pars
+	elif len(pars)==3: 
+		x0=0
+		A,w1,w2 = pars
 
 	a = np.zeros(len(x))
 	ind_less = np.where(x<=x0)[0]
@@ -289,7 +292,7 @@ def peak_fitter(time,rate,only_base_index,peak_index,peak_prof_index,guess_vals)
 	offseted_rate = rate - base_value
 	offseted_time = time - time[peak_index]
 	try:
-		popt,pcov = op.curve_fit(rise_n_decay, offseted_time[peak_prof_index],offseted_rate[peak_prof_index], p0=guess_vals, bounds = ([-10,1,1e-3,-100],[10,20000,100,-1e-3]))
+		popt,pcov = op.curve_fit(rise_n_decay, offseted_time[peak_prof_index],offseted_rate[peak_prof_index], p0=guess_vals, bounds = ([1,1e-3,-100],[20000,100,-1e-3]))
 
 	except RuntimeError:
 		popt = guess_vals
@@ -369,15 +372,20 @@ def peak_segmenter(peak_index, time, number_of_segments, peak_duration = 10.0, )
 	# If the number of elements in peak is not an exact multiple of number of segments, then crop elements on both side to make is the same length
 	len_peak = len(peak_indices)
 	segment_length = len_peak/number_of_segments
-	if len_peak - segment_length*number_of_segments !=0:
-		if (len_peak - segment_length*number_of_segments )%2 == 0: 
-			crop_minus = (len_peak - segment_length*number_of_segments )/2
-			crop_plus = (len_peak - segment_length*number_of_segments )/2
-		else:
-			crop_minus = (len_peak - segment_length*number_of_segments )/2+1
-			crop_plus = (len_peak - segment_length*number_of_segments )/2
-		#~ print crop_minus,crop_plus,len_peak	
-		array_indices = np.reshape(peak_indices[crop_minus:-crop_plus],(number_of_segments,segment_length))
+	if len_peak>0:
+		#~ print len_peak
+		if len_peak - segment_length*number_of_segments !=0:
+			if (len_peak - segment_length*number_of_segments )%2 == 0: 
+				crop_minus = (len_peak - segment_length*number_of_segments )/2
+				crop_plus = (len_peak - segment_length*number_of_segments )/2
+			else:
+				crop_minus = (len_peak - segment_length*number_of_segments )/2+1
+				crop_plus = (len_peak - segment_length*number_of_segments )/2
+			print crop_minus,crop_plus,len_peak	
+			if crop_plus>0: array_indices = np.reshape(peak_indices[crop_minus:-crop_plus],(number_of_segments,segment_length))
+			else :array_indices = np.reshape(peak_indices[crop_minus:],(number_of_segments,segment_length))
+		else: 
+			array_indices = np.reshape(peak_indices,(number_of_segments,segment_length))
 	else: 
-		array_indices = np.reshape(peak_indices,(number_of_segments,segment_length))
+		array_indices = np.array([[],[],[],[]])
 	return array_indices

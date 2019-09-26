@@ -12,27 +12,51 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
 import my_funcs as mf
+import argparse 
 
 
-data_path = "../lc_data/"
-unit1_data_total	= fits.open(data_path+"laxpc_lc_0p05_unit1_3.0_80.0keV.lc")
+pr = argparse.ArgumentParser()
+
+pr.add_argument("--lcdatadir", 		"-d",default="../lc_data/")
+pr.add_argument("--filename1",		"-i1",default="laxpc_lc_0p05_unit1_3.0_80.0keV.lc")
+pr.add_argument("--filename2", 		"-i2",default="laxpc_lc_0p05_unit2_3.0_80.0keV.lc")
+pr.add_argument("--output_text", 	"-o",default="")
+pr.add_argument("--peak_file_text", "-p",default="")
+pr.add_argument("--fitted_text", 	"-f",default="")
+
+pr.add_argument("--boundary_dist", 	"-b",default=0.1,type = float)
+pr.add_argument("--par_ratio",	 	"-r",default=0.3,type = float)
+
+
+
+
+args = pr.parse_args()
+
+
+data_path = args.lcdatadir
+file_name1 = args.filename1
+if data_path[-1]!='/': data_path = data_path+'/'
+
+fitted_text = args.fitted_text
+
+unit1_data_total	= fits.open(data_path+file_name1)
 unit1_time_total, unit1_rate_total, unit1_r_er_total = mf.data_extractor(unit1_data_total)
 
-unit1_peak_features = np.loadtxt('unit1_peak_fit_values.txt')
-unit2_peak_features = np.loadtxt('unit2_peak_fit_values.txt')
+unit1_peak_features = np.loadtxt('unit1_fitted_vals_' + fitted_text + '.txt')
+unit2_peak_features = np.loadtxt('unit2_fitted_vals_' + fitted_text + '.txt')
 peak_time_from_file = np.loadtxt('peak_time_list_0p05_unit1.txt')
-peak_index = np.loadtxt("index_list_0p05_unit1_fullrange.txt",dtype=int)
+peak_index 			= np.loadtxt('index_list_' + args.peak_file_text+ ".txt",dtype=int)
 
-bounds = np.array([[-10,1,1e-3,-100],[10,20000,100,-1e-3]])
+bounds = np.array([[1,1e-3,-100],[20000,100,-1e-3]])
 min_bound = bounds[0]
 max_bound = bounds[1]
 #~ good_fits_index = np.where ()
 
-labels = ['t0','A','w1','w2']
+labels = ['A','w1','w2']
 
 good_fits_flag = np.ones(len(peak_index))					# We will store 1 for good fit and 0 for bad	
 
-boundary_frac_dist = 1e-1								# How far from the boundary the fit parameter has to be
+boundary_frac_dist = args.boundary_dist								# How far from the boundary the fit parameter has to be
 
 for i,par in enumerate(labels):
 	bad_fit_index = np.where( (np.abs(unit1_peak_features[:,i] - min_bound[i])< boundary_frac_dist * np.abs(min_bound[i])) 
@@ -42,13 +66,19 @@ for i,par in enumerate(labels):
 	good_fits_flag[bad_fit_index] = 0
 
 print len(good_fits_flag), np.sum(good_fits_flag)	
-good_fits_flag = good_fits_flag.astype(bool)
 
-np.savetxt("good_fit_flag.txt",good_fits_flag)
+out_text = args.output_text
+
+good_fits_flag = good_fits_flag.astype(bool)
+np.savetxt("good_fit_flag_{}.txt".format(out_text),good_fits_flag)
+
+
+##### Comparing pars in different units to see if the shot is present in both. 
+
 
 shot_flag = good_fits_flag.copy()						# 1 for Shot 0 otherwise. It assumes bad fits are not shots
 
-par_diff_ratio = 0.3							# We compute the ratio of pars and see if they lie within 1*par_diff_ratio of 1
+par_diff_ratio = args.par_ratio							# We compute the ratio of pars and see if they lie within 1*par_diff_ratio of 1
 
 for i in range (1,np.shape(unit1_peak_features)[1]):
 	par_ratio = unit1_peak_features[:,i]/unit2_peak_features[:,i]
@@ -58,8 +88,9 @@ for i in range (1,np.shape(unit1_peak_features)[1]):
 	
 print len(good_fits_flag), np.sum(good_fits_flag), np.sum(shot_flag)
 
-np.savetxt("shot_flag.txt",shot_flag)
+np.savetxt("shot_flag_{}.txt".format(out_text),shot_flag)
 
+## Saving the GTI of the shot
 
 gti_start 	= []
 gti_stop	= []
@@ -69,4 +100,4 @@ for i, peak_ind in enumerate(peak_index[shot_flag]):
 	gti_start.append(unit1_time_total[peak_indices[0]])
 	gti_stop.append(unit1_time_total[peak_indices[-1]])
 
-np.savetxt("GTI_shots.txt",np.transpose([gti_start,gti_stop]))
+np.savetxt("GTI_shots_{}.txt".format(out_text),np.transpose([gti_start,gti_stop]))
