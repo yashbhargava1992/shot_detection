@@ -44,7 +44,7 @@ unit1_time_total, unit1_rate_total, unit1_r_er_total = mf.data_extractor(unit1_d
 
 unit1_peak_features = np.loadtxt('unit1_fitted_vals_' + fitted_text + '.txt')
 unit2_peak_features = np.loadtxt('unit2_fitted_vals_' + fitted_text + '.txt')
-peak_time_from_file = np.loadtxt('peak_time_list_0p05_unit1.txt')
+peak_time_from_file = np.loadtxt('peak_time_list_{}.txt'.format(args.peak_file_text))
 peak_index 			= np.loadtxt('index_list_' + args.peak_file_text+ ".txt",dtype=int)
 
 bounds = np.array([[1,1e-3,-100],[20000,100,-1e-3]])
