@@ -295,7 +295,7 @@ def peak_fitter(time,rate,only_base_index,peak_index,peak_prof_index,guess_vals)
 		popt,pcov = op.curve_fit(rise_n_decay, offseted_time[peak_prof_index],offseted_rate[peak_prof_index], p0=guess_vals, bounds = ([1,1e-3,-100],[20000,100,-1e-3]))
 
 	except RuntimeError:
-		popt = guess_vals
+		popt = [20000,100,-100]
 		pcov = np.reshape(np.zeros(len(popt)*len(popt)),(len(popt),len(popt)))
 	return base_value, popt, pcov
 
