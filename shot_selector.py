@@ -23,6 +23,7 @@ pr.add_argument("--filename2", 		"-i2",default="laxpc_lc_0p05_unit2_3.0_80.0keV.
 pr.add_argument("--output_text", 	"-o",default="")
 pr.add_argument("--peak_file_text", "-p",default="")
 pr.add_argument("--fitted_text", 	"-f",default="")
+pr.add_argument("--append_text", 	"-a",default="")
 
 pr.add_argument("--boundary_dist", 	"-b",default=0.1,type = float)
 pr.add_argument("--par_ratio",	 	"-r",default=0.3,type = float)
@@ -42,10 +43,10 @@ fitted_text = args.fitted_text
 unit1_data_total	= fits.open(data_path+file_name1)
 unit1_time_total, unit1_rate_total, unit1_r_er_total = mf.data_extractor(unit1_data_total)
 
-unit1_peak_features = np.loadtxt('unit1_fitted_vals_' + fitted_text + '.txt')
-unit2_peak_features = np.loadtxt('unit2_fitted_vals_' + fitted_text + '.txt')
-peak_time_from_file = np.loadtxt('peak_time_list_{}.txt'.format(args.peak_file_text))
-peak_index 			= np.loadtxt('index_list_' + args.peak_file_text+ ".txt",dtype=int)
+unit1_peak_features = np.loadtxt(args.append_text+'_unit1_fitted_vals_' + fitted_text + '.txt')
+unit2_peak_features = np.loadtxt(args.append_text+'_unit2_fitted_vals_' + fitted_text + '.txt')
+peak_time_from_file = np.loadtxt('{0}_peak_time_list_{1}.txt'.format(args.append_text,args.peak_file_text))
+peak_index 			= np.loadtxt(args.append_text+'_index_list_' + args.peak_file_text+ ".txt",dtype=int)
 
 bounds = np.array([[1,1e-3,-100],[20000,100,-1e-3]])
 min_bound = bounds[0]
@@ -70,7 +71,7 @@ print len(good_fits_flag), np.sum(good_fits_flag)
 out_text = args.output_text
 
 good_fits_flag = good_fits_flag.astype(bool)
-np.savetxt("good_fit_flag_{}.txt".format(out_text),good_fits_flag)
+np.savetxt("{0}_good_fit_flag_{1}.txt".format(args.append_text,out_text),good_fits_flag)
 
 
 ##### Comparing pars in different units to see if the shot is present in both. 
@@ -88,7 +89,7 @@ for i in range (1,np.shape(unit1_peak_features)[1]):
 	
 print len(good_fits_flag), np.sum(good_fits_flag), np.sum(shot_flag)
 
-np.savetxt("shot_flag_{}.txt".format(out_text),shot_flag)
+np.savetxt("{0}_shot_flag_{1}.txt".format(args.append_text,out_text),shot_flag)
 
 ## Saving the GTI of the shot
 
@@ -100,4 +101,4 @@ for i, peak_ind in enumerate(peak_index[shot_flag]):
 	gti_start.append(unit1_time_total[peak_indices[0]])
 	gti_stop.append(unit1_time_total[peak_indices[-1]])
 
-np.savetxt("GTI_shots_{}.txt".format(out_text),np.transpose([gti_start,gti_stop]))
+np.savetxt("{0}_GTI_shots_{1}.txt".format(args.append_text,out_text),np.transpose([gti_start,gti_stop]))

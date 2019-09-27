@@ -21,6 +21,7 @@ pr = argparse.ArgumentParser()
 pr.add_argument("--lcdatadir", 		"-d",default="../lc_data/")
 pr.add_argument("--filename", 		"-i1",default="laxpc_lc_0p05_unit1_3.0_80.0keV.lc")
 pr.add_argument("--output_text", 	"-o",default="")
+pr.add_argument("--append_text", 	"-a",default="")
 
 pr.add_argument("--shot_sep", 		"-s",type=float,default=0.5)
 pr.add_argument("--search_length",	"-t",type=float,default=32.0)
@@ -70,5 +71,5 @@ for i,seg_end in enumerate(gap_start):
 
 out_text = args.output_text
 
-np.savetxt('index_list_' + out_text + '.txt',list_of_peak_indices,fmt='%1i')		# Saving the list of indices to be used with 0.05 s LC of the observation. 
-np.savetxt('peak_time_list_' + out_text + '.txt',list_of_peak_times)
+np.savetxt(args.append_text+'_index_list_' + out_text + '.txt',list_of_peak_indices,fmt='%1i')		# Saving the list of indices to be used with 0.05 s LC of the observation. 
+np.savetxt(args.append_text+'_peak_time_list_' + out_text + '.txt',list_of_peak_times)

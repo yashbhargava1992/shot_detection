@@ -20,6 +20,7 @@ pr.add_argument("--lcdatadir", 		"-d",default="../lc_data/")
 pr.add_argument("--filename1",		"-i1",default="laxpc_lc_0p05_unit1_3.0_80.0keV.lc")
 
 pr.add_argument("--output_text", 	"-o",default="")
+pr.add_argument("--append_text", 	"-a",default="")
 pr.add_argument("--peak_file_text", "-p",default="")
 pr.add_argument("--shot_flag_text", "-f",default="")
 
@@ -37,11 +38,11 @@ unit1_data_total	= fits.open(data_path+file_name1)
 unit1_time_total, unit1_rate_total, unit1_r_er_total = mf.data_extractor(unit1_data_total)
 
 
-good_index 			= np.loadtxt('shot_flag_{}.txt'.format(args.shot_flag_text))
+good_index 			= np.loadtxt('{0}_shot_flag_{1}.txt'.format(args.append_text,args.shot_flag_text))
 good_index 			= good_index.astype(bool)
 
 
-peak_index = np.loadtxt("index_list_{}.txt".format(args.peak_file_text),dtype=int)
+peak_index = np.loadtxt("{0}_index_list_{1}.txt".format(args.append_text,args.peak_file_text),dtype=int)
 
 number_seg 	= args.number_seg
 gti_start 	= np.array([]) 			# Holds start point of GTI of all segments, will be a 2d array finally
@@ -68,5 +69,5 @@ for i in range(np.shape(gti_start)[1]):
 	#~ np.savetxt("seg_gti_{}.txt".format(i), np.transpose([unit1_time_total[gti_start[:,i].astype(int)],unit1_time_total[gti_stop[:,i].astype(int)]]),fmt='%.3f, %.3f')
 	
 	tab_dat = Table([unit1_time_total[gti_start[:,i].astype(int)],unit1_time_total[gti_stop[:,i].astype(int)]])
-	ascii.write(tab_dat, "seg_gti_{0}_{1}.txt".format(args.output_text,i), format='no_header',overwrite=True)
+	ascii.write(tab_dat, "{2}_seg_gti_{0}_{1}.txt".format(args.output_text,i,args.append_text), format='no_header',overwrite=True)
 	

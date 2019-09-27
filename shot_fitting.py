@@ -18,6 +18,7 @@ pr.add_argument("--lcdatadir", 		"-d",default="../lc_data/")
 pr.add_argument("--filename1", 		"-i1",default="laxpc_lc_0p05_unit1_3.0_80.0keV.lc")
 pr.add_argument("--filename2", 		"-i2",default="laxpc_lc_0p05_unit2_3.0_80.0keV.lc")
 pr.add_argument("--output_text", 	"-o",default="")
+pr.add_argument("--append_text", 	"-a",default="")
 pr.add_argument("--peak_file_text", "-p",default="")
 
 pr.add_argument("--peak_length", 	"-l", default=2, type = float)
@@ -43,7 +44,7 @@ gap_end = gap_start+1
 
 shot_par_list = []
 
-peak_file_name = "index_list_" + args.peak_file_text + ".txt"
+peak_file_name = args.append_text+"_index_list_" + args.peak_file_text + ".txt"
 peak_index = np.loadtxt(peak_file_name,dtype=int)
 
 offset_unit1_list = []
@@ -105,5 +106,5 @@ print np.shape(peak_pars_unit1)
 
 out_text = args.output_text
 
-np.savetxt('unit1_fitted_vals_' + out_text + '.txt',peak_pars_unit1)			# Add saving using astropy.ascii.write. Will help in plotting.
-np.savetxt('unit2_fitted_vals_' + out_text + '.txt',peak_pars_unit2)
+np.savetxt(args.append_text+'_unit1_fitted_vals_' + out_text + '.txt',peak_pars_unit1)			# Add saving using astropy.ascii.write. Will help in plotting.
+np.savetxt(args.append_text+'_unit2_fitted_vals_' + out_text + '.txt',peak_pars_unit2)
