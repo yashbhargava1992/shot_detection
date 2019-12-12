@@ -381,7 +381,7 @@ def peak_segmenter(peak_index, time, number_of_segments, peak_duration = 10.0, )
 			else:
 				crop_minus = (len_peak - segment_length*number_of_segments )/2+1
 				crop_plus = (len_peak - segment_length*number_of_segments )/2
-			print crop_minus,crop_plus,len_peak	
+			#~ print crop_minus,crop_plus,len_peak	
 			if crop_plus>0: array_indices = np.reshape(peak_indices[crop_minus:-crop_plus],(number_of_segments,segment_length))
 			else :array_indices = np.reshape(peak_indices[crop_minus:],(number_of_segments,segment_length))
 		else: 

@@ -25,6 +25,7 @@ pr.add_argument("--peak_file_text", "-p",default="")
 pr.add_argument("--shot_flag_text", "-f",default="")
 
 pr.add_argument("--number_seg", 	"-n",default=4,type = int)
+pr.add_argument("--peak_duration", 	"-t",default=4,type = int)
 
 args = pr.parse_args()
 
@@ -45,11 +46,12 @@ good_index 			= good_index.astype(bool)
 peak_index = np.loadtxt("{0}_index_list_{1}.txt".format(args.append_text,args.peak_file_text),dtype=int)
 
 number_seg 	= args.number_seg
+peak_dur 	= args.peak_duration
 gti_start 	= np.array([]) 			# Holds start point of GTI of all segments, will be a 2d array finally
 gti_stop 	= np.array([])
 for i,index in enumerate(peak_index[good_index]):
 	
-	segmented_peak = mf.peak_segmenter(index, unit1_time_total, number_seg, peak_duration = 4) 
+	segmented_peak = mf.peak_segmenter(index, unit1_time_total, number_seg, peak_duration = peak_dur) 
 	#~ print segmented_peak[:,0],segmented_peak[:,-1], 
 	if i==0: 
 		gti_start 	= np.append(gti_start,segmented_peak[:,0])
