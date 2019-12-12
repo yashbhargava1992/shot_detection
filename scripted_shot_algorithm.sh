@@ -8,13 +8,13 @@ det_out="0p05_unit1_3.0_80.0keV"
 fit_out="0p05_3.0_80.0keV"
 sel_out="0p05_3.0_80.0keV"
 spl_out="0p05_3.0_80.0keV"
-append_text="jayashree_idea"
+append_text="all_peaks_v2"
 res_out="${append_text}_0p05_3.0_80.0keV" 
 
-det_comm="python shot_detector.py -d ${data_dir} -i1 ${unit1_filename} -a ${append_text} -o ${det_out} --shot_sep 0 --search_length 1 --significance 3"
-fit_comm="python shot_fitting.py  -d ${data_dir} -i1 ${unit1_filename} -a ${append_text} -i2 ${unit2_filename} -o ${fit_out} -p ${det_out} --peak_length 1 --base_length 5"
+det_comm="python shot_detector.py -d ${data_dir} -i1 ${unit1_filename} -a ${append_text} -o ${det_out} --shot_sep 0.05 --search_length 10 --significance 3"
+fit_comm="python shot_fitting.py  -d ${data_dir} -i1 ${unit1_filename} -a ${append_text} -i2 ${unit2_filename} -o ${fit_out} -p ${det_out} --peak_length 4 --base_length 20"
 sel_comm="python shot_selector.py -d ${data_dir} -i1 ${unit1_filename} -a ${append_text} -i2 ${unit2_filename} -f ${fit_out} -p ${det_out}  -o ${sel_out} --boundary_dist 0.1 --par_ratio 0.3"
-spl_comm="python shot_splitter.py -d ${data_dir} -i1 ${unit1_filename} -a ${append_text} -f ${sel_out} -p ${det_out}  -o ${spl_out} --number_seg 4"
+spl_comm="python shot_splitter.py -d ${data_dir} -i1 ${unit1_filename} -a ${append_text} -f ${sel_out} -p ${det_out}  -o ${spl_out} --number_seg 9 --peak_duration 4"
 
 echo "Running Detection algorithm"
 echo ${det_comm}
@@ -36,5 +36,7 @@ ${spl_comm}
 
 #~ python plotting_routines.py
 
+cp scripted_shot_algorithm.sh ${append_text}_scripted_shot_algorithm.sh
 mkdir -p ${res_out}
 mv ${append_text}*txt ${res_out}
+mv ${append_text}*sh ${res_out}
