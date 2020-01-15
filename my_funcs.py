@@ -300,7 +300,7 @@ def peak_fitter(time,rate,only_base_index,peak_index,peak_prof_index,guess_vals)
 	return base_value, popt, pcov
 
 
-def peak_add(time, rate, index_list):
+def peak_add(time, rate, index_list, time_duration=10.0, sharpness_factor=4):
 	"""
 	This function takes the light curve time and rate, and the list of shot peak indices
 	And returns a co-added profile of all the shot peaks in that light curve
@@ -311,7 +311,8 @@ def peak_add(time, rate, index_list):
 	time						: Time array  
 	rate						: Rate array
 	peak_index					: Index of the time/rate corresponding to the peak
-	
+	time_duration					: Duration of the peak
+	sharpness_factor				: The code searches for a shorter peak and removes it to get the indices which have only mean counts. The actual peak is time_duration/sharpness_factor
 	
 	OUTPUT:
 	
@@ -321,19 +322,24 @@ def peak_add(time, rate, index_list):
 	"""
 
 	peak_added=[]
+	mean_counts = 0
 	count_peak=0
 	for i, peak_ind in enumerate(index_list) :
-		peak=peak_isolator(peak_ind, time,inexact_flag = False)		# The inexact flag will return blank array if the peak is quit close to a gap
+		peak=peak_isolator(peak_ind, time,inexact_flag = False,time_duration=time_duration)	# The inexact flag will return blank array if the peak is quit close to a gap
+		sharp_peak = peak_isolator(peak_ind, time, inexact_flag=False, time_duration=time_duration/sharpness_factor)
 		#~ print i,peak
+		only_base_index = np.setdiff1d(peak,sharp_peak)
 		if len(peak)>0 :						# To ignore the peaks which are occurring quite near the gaps
 			if count_peak==0 :
 				peak_added= np.append(peak_added, rate[peak])
 				count_peak+=1
+			#	mean_counts+=np.sum(rate[only_base_index])
 				
 			else :
 				peak_added=peak_added+rate[peak]
 				count_peak+=1
-	return peak_added,count_peak
+			mean_counts+=np.sum(rate[only_base_index])
+	return peak_added,count_peak,mean_counts
 			
 def orb_phase(time, *args):
 	"""
