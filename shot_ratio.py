@@ -54,7 +54,7 @@ unit2_time_band5, unit2_rate_band5, unit2_r_er_band5 = mf.data_extractor(unit2_d
 #~ index_list=[]
 #~ index_txt	= open("index_list_0p05_unit1_fullrange.txt","r")
 #~ for line in index_txt : index_list.append(int(line.rstrip()))
-index_list = np.loadtxt("index_list_0p05_unit1_fullrange.txt")
+index_list = np.loadtxt("all_peaks_v2_0p05_3.0_80.0keV/all_peaks_v2_index_list_0p05_unit1_3.0_80.0keV.txt")
 
 peak_added_band1, count_peak, mean_count1=mf.peak_add(unit2_time_band1, unit2_rate_band1, index_list)
 peak_added_band2, count_peak, mean_count2=mf.peak_add(unit2_time_band2, unit2_rate_band2, index_list)
@@ -62,21 +62,21 @@ peak_added_band3, count_peak, mean_count3=mf.peak_add(unit2_time_band3, unit2_ra
 peak_added_band4, count_peak, mean_count4=mf.peak_add(unit2_time_band4, unit2_rate_band4, index_list)
 peak_added_band5, count_peak, mean_count5=mf.peak_add(unit2_time_band5, unit2_rate_band5, index_list)
 			
-peak_added_band1=peak_added_band1/count_peak/mean_count1
+peak_added_band1=peak_added_band1/mean_count1
 max_band1=np.max(peak_added_band1)
 #~ peak_added_band1=peak_added_band1/max_band1
 
-peak_added_band2=peak_added_band2/count_peak/mean_count2
+peak_added_band2=peak_added_band2/mean_count2
 max_band2=np.max(peak_added_band2)
 #~ peak_added_band2=peak_added_band2/max_band2
 
-peak_added_band3=peak_added_band3/count_peak/mean_count3
+peak_added_band3=peak_added_band3/mean_count3
 max_band3=np.max(peak_added_band3)
 
-peak_added_band4=peak_added_band4/count_peak/mean_count4
+peak_added_band4=peak_added_band4/mean_count4
 max_band4=np.max(peak_added_band4)
 
-peak_added_band5=peak_added_band5/count_peak/mean_count5
+peak_added_band5=peak_added_band5/mean_count5
 max_band5=np.max(peak_added_band5)
 
 

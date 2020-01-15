@@ -325,8 +325,8 @@ def peak_add(time, rate, index_list, time_duration=10.0, sharpness_factor=4):
 	mean_counts = 0
 	count_peak=0
 	for i, peak_ind in enumerate(index_list) :
-		peak=peak_isolator(peak_ind, time,inexact_flag = False,time_duration=time_duration)	# The inexact flag will return blank array if the peak is quit close to a gap
-		sharp_peak = peak_isolator(peak_ind, time, inexact_flag=False, time_duration=time_duration/sharpness_factor)
+		peak=peak_isolator(peak_ind, time,inexact_flag = False,peak_duration=time_duration)	# The inexact flag will return blank array if the peak is quit close to a gap
+		sharp_peak = peak_isolator(peak_ind, time, inexact_flag=False, peak_duration=time_duration/sharpness_factor)
 		#~ print i,peak
 		only_base_index = np.setdiff1d(peak,sharp_peak)
 		if len(peak)>0 :						# To ignore the peaks which are occurring quite near the gaps
